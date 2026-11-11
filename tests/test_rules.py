@@ -57,7 +57,7 @@ def test_ilot_redimensionne():
     pl = [dict(p) for p in V3]
     ilot = [p for p in pl if p['uid'] == 'v3-15'][0]
     assert not [p for p in rules.verifier(pl)['problemes'] if p['uid'] == 'v3-15']
-    ilot['w'] = 60          # s'étend vers l'ouest jusque sur la chaise de cuisine de Mom
-    ilot['x'] -= (60 - 26.8) / 2
+    ilot['w'] = 100         # s'étend vers l'ouest (x 256.8) jusque sur la chaise de cuisine de Mom
+    ilot['x'] -= (100 - 26.8) / 2
     msgs = [p['message'] for p in rules.verifier(pl)['problemes'] if p['uid'] == 'v3-15' or p.get('uid2') == 'v3-15']
     assert any('chevauche' in m for m in msgs)
