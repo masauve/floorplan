@@ -47,20 +47,27 @@
     <div id="liste-catalogue"></div>
   </aside>
   <section id="zone-plan">
+    <nav id="onglets" role="tablist" aria-label="Pièces"></nav>
+    <div id="vue-plan">
     <svg id="plan" xmlns="http://www.w3.org/2000/svg"></svg>
     <div class="controles-vue" role="group" aria-label="Vue du plan">
       <button id="btn-zoom-plus" title="Zoom avant (touche +)" aria-label="Zoom avant">+</button>
       <span id="niveau-zoom" title="Niveau de zoom">100 %</span>
       <button id="btn-zoom-moins" title="Zoom arrière (touche −)" aria-label="Zoom arrière">−</button>
-      <button id="btn-recentrer" class="texte" title="Afficher tout le plan (touche 0)">Recentrer</button>
+      <button id="btn-recentrer" class="texte" title="Afficher tout le plan ou toute la pièce (touche 0)">Recentrer</button>
     </div>
     <div class="aide-plan">Glisser : déplacer · <b>R</b> : tourner de 90° · <b>[</b> / <b>]</b> : 15° (Maj : 1°) · <b>Suppr</b> : enlever · flèches : 1 po (Maj : 6 po) · <b>+</b> / <b>−</b> / molette : zoom · <b>0</b> : recentrer · glisser le fond : déplacer la vue</div>
     <div class="legende">
       <span><i class="c-existant"></i>Existant</span><span><i class="c-nouveau"></i>À acheter</span><span><i class="c-sur_mesure"></i>Sur mesure</span><span><i class="c-perso"></i>Créé</span>
       <span><i class="c-probleme"></i>Problème</span><span><i class="c-plinthe"></i>Plinthe chauffante</span>
     </div>
+    </div>
   </section>
   <aside id="panneau">
+    <section id="panneau-piece" hidden>
+      <h2 id="piece-titre">Pièce</h2>
+      <div id="piece-contenu"></div>
+    </section>
     <section id="selection">
       <h2>Sélection</h2>
       <div id="sel-contenu"><p class="aide">Aucun meuble sélectionné.</p></div>

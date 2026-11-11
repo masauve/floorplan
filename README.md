@@ -5,6 +5,7 @@ Web app to try furniture layouts on the floor plan of the 4½ Style D apartment 
 - Floor plan drawn to scale (inches) from `app/data/floorplan_data.json`, extracted from the residence's PDF (1:100).
 - Furniture catalog (existing pieces from `currentfurniture.csv` + suggested purchases + custom island) in `app/data/catalogue.json`.
 - Drag, rotate to any angle (90° / 15° / 1° steps, typed angle, or "align with the nearest wall" for diagonal walls), nudge (arrow keys), resize custom pieces, save / open / copy layouts.
+- One tab per room (bedrooms, living/kitchen, bathroom, entry): zoomed on the room, rest of the apartment faded, only that room's furniture, room panel with its pieces and measurements. All tabs edit the same layout. The ↗ button opens a room in its own browser tab; windows showing the same layout stay in sync both ways, unsaved changes included (BroadcastChannel). Address format: `#piece=BR_NE&plan=<id>`.
 - Create your own rectangular pieces (name, width, depth, floor or wall-mounted, quantity, walker access). They are stored in the database, shared by everyone, and can be deleted when no saved layout uses them.
 - Live checks in the browser: overlaps, walls, door swing, distance to baseboard heaters.
 - Full check on the server: largest free turning circle per room (default 48 in), 36-in walker paths from each room entrance to every piece that must be reached, bed transfer side (36 in), missing essential pieces.

@@ -71,3 +71,15 @@ svg text { pointer-events: none; font-family: system-ui, sans-serif; }
 .rotation button { padding: 4px 2px; font-size: 12px; }
 .rotation label.angle { font-size: 11px; display: flex; flex-direction: column; gap: 2px; }
 .rotation label.angle input { width: 100%; padding: 4px; }
+#zone-plan { display: flex; flex-direction: column; }
+#onglets { display: flex; gap: 2px; padding: 6px 8px 0; background: #e9edf2; border-bottom: 1px solid #c9d2dd; flex-wrap: wrap; }
+#onglets .onglet { display: flex; align-items: stretch; border: 1px solid #c9d2dd; border-bottom: 0; border-radius: 6px 6px 0 0; background: #f5f7fa; }
+#onglets .onglet button { border: 0; background: transparent; border-radius: 6px 6px 0 0; padding: 6px 10px; font-size: 13px; }
+#onglets .onglet button.nouvel { padding: 6px 7px; color: #5b6878; font-size: 12px; }
+#onglets .onglet.actif { background: #fff; border-color: #2f6db5; margin-bottom: -1px; }
+#onglets .onglet.actif button.titre { font-weight: 700; color: #23405f; }
+#onglets .compte { display: inline-block; min-width: 18px; margin-left: 4px; padding: 0 5px; border-radius: 9px; background: #dfe6ef; font-size: 11px; color: #39475a; }
+#vue-plan { position: relative; flex: 1; min-height: 0; }
+#panneau-piece .liste li { border-left-color: #2f6db5; }
+#panneau-piece .liste li.sel { background: #e8f0fb; font-weight: 600; }
+.sync { font-size: 11px; color: #2a7a3b; margin-left: 6px; }

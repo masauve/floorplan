@@ -23,6 +23,8 @@ def R(x0, y0, x1, y1):
 
 
 PIECES = {r['id']: r['polygon'] for r in PLAN['rooms'] if r['id'] != 'BALCONY'}
+SURFACES = {r['id']: r.get('area_sq_ft') for r in PLAN['rooms']}
+ONGLETS = ('BR_SW', 'BR_NE', 'LIVING', 'BATH', 'ENTRY')   # pièces qui ont leur onglet dans l'interface
 NOMS = {'BR_SW': 'Chambre (SO)', 'BR_NE': 'Chambre (NE) / bureau', 'LIVING': 'Séjour et cuisine',
         'BATH': 'Salle de bain', 'ENTRY': "Vestibule d'entrée", 'PASSAGE': 'Passage'}
 
@@ -366,7 +368,9 @@ def verifier(placements, params=None, cat=None):
 def plan_public():
     """Données du plan envoyées au navigateur."""
     return {
-        'pieces': [{'id': k, 'nom': NOMS.get(k, k), 'polygone': v} for k, v in PIECES.items()],
+        'pieces': [{'id': k, 'nom': NOMS.get(k, k), 'polygone': v, 'surface_pi2': SURFACES.get(k),
+                    'emprise': [round(max(p[0] for p in v) - min(p[0] for p in v), 1), round(max(p[1] for p in v) - min(p[1] for p in v), 1)],
+                    'onglet': k in ONGLETS} for k, v in PIECES.items()],
         'balcon': [r['polygon'] for r in PLAN['rooms'] if r['id'] == 'BALCONY'][0],
         'murs': PLAN['walls_raw'],
         'ouvertures': PLAN['openings'],

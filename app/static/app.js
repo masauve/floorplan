@@ -12,7 +12,9 @@ const S = {
   planId: null, nomPlan: 'Nouveau plan', modifie: false,
   vb: { x: -15, y: -362, w: 412, h: 432 },   // vue initiale : tout l'appartement et le balcon
   problemes: [], resultats: null,
+  onglet: null,                      // null = plan complet, sinon id de la pièce affichée
 };
+const ID_ONGLET = Math.random().toString(36).slice(2, 10);   // identifie cette fenêtre pour la synchronisation
 
 /* ------------------------------------------------------------------ utilitaires */
 const $ = (id) => document.getElementById(id);
@@ -147,8 +149,15 @@ function controles() {
   S.problemes = out;
   const ul = $('problemes');
   ul.innerHTML = '';
-  if (!out.length) { ul.innerHTML = '<li class="ok">Aucun chevauchement, mur, porte ou plinthe en conflit.</li>'; }
-  for (const p of out) {
+  const dansPiece = (u) => { const pl = S.placements.find((x) => x.uid === u); return pl && pieceDe(pl.x, pl.y) === S.onglet; };
+  const affiches = S.onglet ? out.filter((p) => dansPiece(p.uid) || (p.uid2 && dansPiece(p.uid2))) : out;
+  if (!affiches.length) { ul.innerHTML = `<li class="ok">Aucun chevauchement, mur, porte ou plinthe en conflit${S.onglet ? ' dans cette pièce' : ''}.</li>`; }
+  if (S.onglet && out.length > affiches.length) {
+    const li = document.createElement('li'); li.className = 'info';
+    li.textContent = `${out.length - affiches.length} autre(s) problème(s) dans d'autres pièces : voir « Plan complet ».`;
+    ul.appendChild(li);
+  }
+  for (const p of affiches) {
     const li = document.createElement('li');
     if (p.info) li.className = 'info';
     li.textContent = p.msg;
@@ -158,7 +167,7 @@ function controles() {
 }
 
 /* ------------------------------------------------------------------ dessin du plan */
-let gPlan, gMeubles, gCalques, gResultats;
+let gPlan, gMasque, gMeubles, gCalques, gResultats;
 function dessinerPlan() {
   const svg = $('plan');
   svg.innerHTML = '';
@@ -203,10 +212,88 @@ function dessinerPlan() {
     el('text', { x, y: -y, 'font-size': 4.2, 'font-weight': 600, fill: '#456', 'text-anchor': 'middle' }, gPlan).textContent = p.nom;
   }
   el('text', { x: 192, y: 40, 'font-size': 4, fill: '#456', 'text-anchor': 'middle' }, gPlan).textContent = 'Balcon';
+  gMasque = el('g', {}, svg);
   gCalques = el('g', {}, svg);
   gMeubles = el('g', {}, svg);
   gResultats = el('g', {}, svg);
   appliquerVue();
+}
+
+/* ------------------------------------------------------------------ onglets par pièce */
+const pieceOnglet = () => S.onglet && S.plan.pieces.find((r) => r.id === S.onglet);
+function visible(pl) {
+  return !S.onglet || pl.uid === S.sel || (glisse && glisse.id === pl.uid) || pieceDe(pl.x, pl.y) === S.onglet;
+}
+function vueOnglet() {
+  const p = pieceOnglet();
+  if (!p) return { ...VUE_INITIALE };
+  const [x0, y0, x1, y1] = bornes(p.polygone), marge = 16;
+  return { x: x0 - marge, y: -(y1 + marge), w: x1 - x0 + 2 * marge, h: y1 - y0 + 2 * marge };
+}
+/* Estompe tout ce qui est hors de la pièce ; les murs autour de la pièce restent nets. */
+function dessinerMasque() {
+  gMasque.innerHTML = '';
+  const p = pieceOnglet();
+  if (!p) return;
+  const trou = p.polygone.map(([x, y], i) => `${i ? 'L' : 'M'}${x},${-y}`).join(' ') + ' Z';
+  el('path', { d: `M-200,-500 H600 V200 H-200 Z ${trou}`, 'fill-rule': 'evenodd', fill: '#f2f4f7', 'fill-opacity': 0.9 }, gMasque);
+  const [x0, y0, x1, y1] = bornes(p.polygone), m = 14;
+  const defs = el('defs', {}, gMasque), clip = el('clipPath', { id: 'clip-piece' }, defs);
+  el('rect', { x: x0 - m, y: -(y1 + m), width: x1 - x0 + 2 * m, height: y1 - y0 + 2 * m }, clip);
+  const murs = el('g', { 'clip-path': 'url(#clip-piece)' }, gMasque);
+  for (const w of S.plan.murs) {
+    if (w.type === 'rect') el('rect', { x: w.x[0], y: -w.y[1], width: w.x[1] - w.x[0], height: w.y[1] - w.y[0], fill: '#6b7280' }, murs);
+    else el('polygon', { points: pts(w.pts), fill: '#6b7280' }, murs);
+  }
+  for (const pl of S.plan.plinthes) el('line', { x1: pl.p1[0], y1: -pl.p1[1], x2: pl.p2[0], y2: -pl.p2[1], stroke: '#e03030', 'stroke-width': 1.6 }, murs);
+  el('polygon', { points: pts(p.polygone), fill: 'none', stroke: '#23405f', 'stroke-width': 0.8 }, gMasque);
+}
+function dessinerOnglets() {
+  const nav = $('onglets');
+  nav.innerHTML = '';
+  const nb = (id) => S.placements.filter((pl) => S.catById[pl.item]?.type === 'sol' && pieceDe(pl.x, pl.y) === id).length;
+  const items = [{ id: null, nom: 'Plan complet' }, ...S.plan.pieces.filter((p) => p.onglet).map((p) => ({ id: p.id, nom: p.nom }))];
+  for (const it of items) {
+    const d = document.createElement('div');
+    d.className = 'onglet' + ((S.onglet || null) === it.id ? ' actif' : '');
+    d.setAttribute('role', 'tab');
+    d.innerHTML = `<button class="titre">${esc(it.nom)}${it.id ? `<span class="compte" title="meubles au sol dans la pièce">${nb(it.id)}</span>` : ''}</button>` +
+      (it.id ? '<button class="nouvel" title="Ouvrir cette pièce dans un nouvel onglet du navigateur (synchronisé)">↗</button>' : '');
+    d.querySelector('.titre').onclick = () => definirOnglet(it.id);
+    const n = d.querySelector('.nouvel');
+    if (n) n.onclick = () => window.open(`${location.pathname}#piece=${it.id}${S.planId ? '&plan=' + S.planId : ''}`, '_blank');
+    nav.appendChild(d);
+  }
+}
+function definirOnglet(id) {
+  S.onglet = id && S.plan.pieces.some((p) => p.id === id) ? id : null;
+  S.vb = vueOnglet();
+  appliquerVue();
+  majBoutonsZoom();
+  dessinerMasque();
+  const h = new URLSearchParams(location.hash.slice(1));
+  if (S.onglet) h.set('piece', S.onglet); else h.delete('piece');
+  if (S.planId) h.set('plan', S.planId);
+  history.replaceState(null, '', `${location.pathname}${location.search}${h.toString() ? '#' + h : ''}`);
+  toutRedessiner();
+}
+function dessinerPanneauPiece() {
+  const sec = $('panneau-piece'), p = pieceOnglet();
+  sec.hidden = !p;
+  if (!p) return;
+  $('piece-titre').textContent = p.nom;
+  const ici = S.placements.filter((pl) => S.catById[pl.item] && pieceDe(pl.x, pl.y) === p.id);
+  const res = S.resultats && S.resultats.pieces.find((r) => r.piece === p.id);
+  let h = `<p class="aide">Emprise ${r1(p.emprise[0])} × ${r1(p.emprise[1])} po · ${p.surface_pi2} pi²</p>`;
+  if (res) h += `<p>Plus grand cercle libre : <b>${res.cercle} po</b> <span class="${res.ok ? 'ok-txt' : 'ko-txt'}">${res.ok ? 'OK' : 'insuffisant'}</span></p>`;
+  else h += '<p class="aide">Lancez « Vérifier le plan » pour voir le cercle de rotation de la pièce.</p>';
+  h += `<h3>Meubles dans la pièce (${ici.length})</h3>`;
+  h += ici.length ? '<ul class="liste">' + ici.map((pl) => {
+    const m = S.catById[pl.item], [w, d] = dims(pl, m);
+    return `<li data-uid="${esc(pl.uid)}" class="${pl.uid === S.sel ? 'sel' : ''}">${esc(m.nom)} · ${r1(w)} × ${r1(d)} po · ${r1(pl.rot || 0)}°</li>`;
+  }).join('') + '</ul>' : '<p class="aide">Aucun meuble. Utilisez « + » dans la liste de gauche : le meuble arrive au centre de la pièce.</p>';
+  $('piece-contenu').innerHTML = h;
+  for (const li of $('piece-contenu').querySelectorAll('li[data-uid]')) li.onclick = () => selectionner(li.dataset.uid);
 }
 
 function dessinerMeubles() {
@@ -220,7 +307,7 @@ function dessinerMeubles() {
   });
   for (const pl of ordre) {
     const m = S.catById[pl.item];
-    if (!m) continue;
+    if (!m || !visible(pl)) continue;
     const poly = empreinte(pl, m);
     const z = zoneInclinaison(pl, m);
     if (z) el('polygon', { points: pts(z), fill: '#4a7fd4', 'fill-opacity': 0.06, stroke: '#4a7fd4', 'stroke-width': 0.5, 'stroke-dasharray': '2,1' }, gCalques);
@@ -320,13 +407,14 @@ function dessinerResultats() {
   if (!S.resultats) return;
   const d = +$('p-cercle').value || 48;
   for (const p of S.resultats.pieces) {
+    if (S.onglet && p.piece !== S.onglet) continue;
     const [cx, cy] = p.centre;
     el('circle', { cx, cy: -cy, r: Math.min(p.cercle, d) / 2, fill: 'none', stroke: p.ok ? '#2fb35a' : '#e03030', 'stroke-width': 0.8, 'stroke-dasharray': '3,2' }, gResultats);
   }
   for (const a of S.resultats.acces) {
     if (a.accessible) continue;
     const pl = S.placements.find((x) => x.uid === a.uid);
-    if (!pl) continue;
+    if (!pl || !visible(pl)) continue;
     el('text', { x: pl.x, y: -pl.y - 4, 'font-size': 7, 'font-weight': 700, fill: '#e03030', 'text-anchor': 'middle' }, gResultats).textContent = '!';
   }
 }
@@ -337,6 +425,8 @@ function toutRedessiner() {
   dessinerResultats();
   dessinerSelection();
   dessinerCatalogue();
+  dessinerOnglets();
+  dessinerPanneauPiece();
 }
 
 /* ------------------------------------------------------------------ vue (zoom, déplacement) */
@@ -355,7 +445,7 @@ function zoomer(f, centre) {
   if (gMeubles) dessinerMeubles();   // poignées et étiquettes à l'échelle de la vue
 }
 function recentrer() {
-  S.vb = { ...VUE_INITIALE };
+  S.vb = vueOnglet();
   appliquerVue();
   majBoutonsZoom();
   if (gMeubles) dessinerMeubles();
@@ -423,6 +513,7 @@ function selectionner(id) {
   S.sel = id;
   dessinerMeubles();
   dessinerSelection();
+  dessinerPanneauPiece();
 }
 function dessinerSelection() {
   const box = $('sel-contenu');
@@ -565,6 +656,7 @@ async function creerMeuble(ev) {
   try {
     const m = await api('/api/meubles', { method: 'POST', body: JSON.stringify(corps) });
     await rechargerCatalogue();
+    if (canal) canal.postMessage({ type: 'catalogue', source: ID_ONGLET });
     $('form-meuble').reset();
     $('m-quantite').value = 1; $('m-acces').checked = true; $('m-placer').checked = placer;
     if (placer) ajouterAuCentre(m.id); else dessinerCatalogue();
@@ -580,6 +672,7 @@ async function supprimerMeuble(m) {
   if (!confirm(`Supprimer « ${m.nom} » du catalogue pour tout le monde ?`)) return;
   await api(`/api/meubles/${m.id}`, { method: 'DELETE' });
   await rechargerCatalogue();
+  if (canal) canal.postMessage({ type: 'catalogue', source: ID_ONGLET });
   dessinerCatalogue();
 }
 
@@ -636,11 +729,49 @@ function afficherResultats() {
   for (const li of $('resultats').querySelectorAll('li[data-uid]')) li.onclick = () => selectionner(li.dataset.uid);
 }
 
+/* ------------------------------------------------------------------ synchronisation entre onglets du navigateur
+   Toutes les vues d'une même fenêtre partagent le même état. Entre fenêtres (bouton ↗), chaque changement
+   est diffusé ; les fenêtres qui ont le même plan ouvert l'appliquent (y compris les changements non enregistrés). */
+const canal = ('BroadcastChannel' in window) ? new BroadcastChannel('amenagement-1400-desgagne') : null;
+let enReception = false, diffusionPrevue = false;
+function diffuser() {
+  if (!canal || enReception || diffusionPrevue) return;
+  diffusionPrevue = true;
+  // setTimeout plutôt que requestAnimationFrame : ce dernier est suspendu dans les onglets en arrière-plan.
+  setTimeout(() => {
+    diffusionPrevue = false;
+    canal.postMessage({ type: 'etat', source: ID_ONGLET, planId: S.planId, nom: $('nom-plan').value, placements: S.placements, modifie: S.modifie });
+  }, 30);
+}
+async function recevoir(msg) {
+  if (!msg || msg.source === ID_ONGLET) return;
+  if (msg.type === 'catalogue') { await rechargerCatalogue(); toutRedessiner(); return; }
+  if (msg.type === 'demande' && msg.planId === S.planId) { diffuser(); return; }
+  if (msg.type === 'enregistre' && msg.ancienId === S.planId) {
+    S.planId = msg.planId; $('nom-plan').value = msg.nom; S.modifie = false; $('etat').textContent = 'enregistré';
+    await chargerListe(S.planId); return;
+  }
+  if (msg.type !== 'etat' || msg.planId !== S.planId) return;
+  if (msg.placements.some((pl) => !S.catById[pl.item])) await rechargerCatalogue();
+  enReception = true;
+  try {
+    S.placements = msg.placements;
+    if (S.sel && !S.placements.some((pl) => pl.uid === S.sel)) S.sel = null;
+    $('nom-plan').value = msg.nom;
+    S.modifie = msg.modifie;
+    $('etat').innerHTML = (msg.modifie ? 'non enregistré' : 'enregistré') + '<span class="sync">⇄ synchronisé</span>';
+    if (msg.modifie) { S.resultats = null; $('resultats').innerHTML = ''; }
+    toutRedessiner();
+  } finally { enReception = false; }
+}
+if (canal) canal.onmessage = (ev) => recevoir(ev.data).catch((e) => console.error(e));
+
 /* ------------------------------------------------------------------ plans enregistrés */
 function marquerModifie(v = true) {
   S.modifie = v;
   $('etat').textContent = v ? 'non enregistré' : 'enregistré';
   if (v) { S.resultats = null; $('resultats').innerHTML = ''; if (gResultats) gResultats.innerHTML = ''; }
+  diffuser();
 }
 async function chargerListe(selection) {
   const plans = await api('/api/plans');
@@ -654,10 +785,12 @@ async function ouvrir(id) {
   const p = await api(`/api/plans/${id}`);
   S.planId = p.id; S.nomPlan = p.nom; S.placements = p.placements; S.sel = null;
   $('nom-plan').value = p.nom;
-  marquerModifie(false);
-  toutRedessiner();
+  S.modifie = false; $('etat').textContent = 'enregistré';
+  S.resultats = null; $('resultats').innerHTML = '';
+  definirOnglet(S.onglet);                      // met aussi à jour l'adresse (#piece=…&plan=…)
 }
 async function enregistrer(sous) {
+  const ancienId = S.planId;
   let nom = $('nom-plan').value.trim() || 'Sans titre';
   if (sous || !S.planId) {
     nom = prompt('Nom du nouveau plan :', sous ? `${nom} (copie)` : nom);
@@ -669,6 +802,7 @@ async function enregistrer(sous) {
   }
   S.nomPlan = nom; $('nom-plan').value = nom;
   marquerModifie(false);
+  if (canal && !sous) canal.postMessage({ type: 'enregistre', source: ID_ONGLET, ancienId, planId: S.planId, nom });
   await chargerListe(S.planId);
 }
 async function supprimer() {
@@ -682,15 +816,16 @@ async function supprimer() {
 }
 function exporterSVG() {
   const svg = $('plan').cloneNode(true);
-  svg.setAttribute('viewBox', '-15 -362 412 432');
-  svg.setAttribute('width', '1650'); svg.setAttribute('height', '1730');
-  const titre = el('text', { x: -10, y: -350, 'font-size': 7, 'font-weight': 700 });
-  titre.textContent = `${$('nom-plan').value} – 1 unité = 1 po`;
+  const v = S.onglet ? vueOnglet() : { ...VUE_INITIALE }, k = 4;
+  svg.setAttribute('viewBox', `${v.x} ${v.y - 14} ${v.w} ${v.h + 14}`);
+  svg.setAttribute('width', Math.round(v.w * k)); svg.setAttribute('height', Math.round((v.h + 14) * k));
+  const titre = el('text', { x: v.x + 4, y: v.y - 4, 'font-size': Math.max(4, v.w / 60), 'font-weight': 700 });
+  titre.textContent = `${$('nom-plan').value}${S.onglet ? ' – ' + pieceOnglet().nom : ''} – 1 unité = 1 po`;
   svg.appendChild(titre);
   const blob = new Blob([new XMLSerializer().serializeToString(svg)], { type: 'image/svg+xml' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `${($('nom-plan').value || 'plan').replace(/[^\w\-]+/g, '_')}.svg`;
+  a.download = `${(($('nom-plan').value || 'plan') + (S.onglet ? '_' + S.onglet : '')).replace(/[^\w\-]+/g, '_')}.svg`;
   a.click();
   URL.revokeObjectURL(a.href);
 }
@@ -703,7 +838,15 @@ async function demarrer() {
     dessinerPlan();
     initVue();
     const plans = await chargerListe();
-    if (plans.length) await ouvrir(plans[0].id); else { $('nom-plan').value = S.nomPlan; toutRedessiner(); }
+    const h = new URLSearchParams(location.hash.slice(1));
+    S.onglet = S.plan.pieces.some((p) => p.id === h.get('piece')) ? h.get('piece') : null;
+    const voulu = plans.find((p) => p.id === h.get('plan')) || plans[0];
+    if (voulu) { await ouvrir(voulu.id); $('liste-plans').value = voulu.id; } else { $('nom-plan').value = S.nomPlan; definirOnglet(S.onglet); }
+    if (canal) canal.postMessage({ type: 'demande', source: ID_ONGLET, planId: S.planId });   // récupérer les changements non enregistrés
+    window.addEventListener('hashchange', () => {
+      const p = new URLSearchParams(location.hash.slice(1)).get('piece');
+      if ((p || null) !== S.onglet) definirOnglet(p);
+    });
   } catch (e) {
     document.body.insertAdjacentHTML('afterbegin', `<p class="ko-txt" style="padding:8px">Impossible de charger l'application : ${e.message}</p>`);
   }
