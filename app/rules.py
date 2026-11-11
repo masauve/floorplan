@@ -39,6 +39,23 @@ FIXES = {
     'BATH': [('baignoire', R(241, 281.7, 272.2, 341.7)), ('toilette', R(181.6, 312.3, 211.3, 333.2)),
              ('lavabo', [[231.1, 242.5], [245.9, 257.3], [233.9, 269.3], [219.1, 254.5]])],
 }
+# Séjour, passage et vestibule forment un seul espace ouvert : les lignes qui les séparent sont imaginaires.
+# Les contraintes (murs, cercles, passages) utilisent le contour réel de cet espace commun.
+ESPACE_COMMUN = [[136.5, 0], [356.8, 0], [356.8, 9.7], [366.4, 9.7], [366.4, 102.9], [356.8, 102.9], [356.8, 117.7], [378.4, 117.7],
+                 [378.4, 175.2], [252.7, 175.2], [254.0, 178.6], [225.9, 204.3], [222.6, 207.7], [210.3, 219.9], [224.2, 233.8],
+                 [166.0, 288.5], [137.9, 261.0], [134.2, 253.8], [134.2, 240.4], [157.0, 217.6], [182.5, 192.1], [202.8, 171.8],
+                 [199.4, 168.4], [165.4, 134.5], [163.8, 132.7], [131.9, 132.7], [131.9, 9.7], [136.5, 9.7]]
+DIVISIONS = [[[199.4, 168.4], [252.7, 175.2]],      # séjour | passage
+             [[210.3, 219.9], [157.0, 217.6]]]      # passage | vestibule
+ZONE = {'LIVING': 'COMMUN', 'PASSAGE': 'COMMUN', 'ENTRY': 'COMMUN', 'BR_SW': 'BR_SW', 'BR_NE': 'BR_NE', 'BATH': 'BATH'}
+CONTOUR_ZONE = {'COMMUN': ESPACE_COMMUN, 'BR_SW': PIECES['BR_SW'], 'BR_NE': PIECES['BR_NE'], 'BATH': PIECES['BATH']}
+PIECES_ZONE = {'COMMUN': ('LIVING', 'ENTRY', 'PASSAGE'), 'BR_SW': ('BR_SW',), 'BR_NE': ('BR_NE',), 'BATH': ('BATH',)}
+
+
+def fixes_zone(z):
+    return [f for p in PIECES_ZONE[z] for f in FIXES.get(p, [])]
+
+
 # Débattement de porte (charnière, rayon, angle début, angle fin). Porte de la chambre SO enlevée.
 PORTES = [{'piece': 'BR_NE', 'charniere': [254.0, 178.6], 'rayon': 34, 'a0': 47.5, 'a1': 137.5}]
 PLINTHES = [{'nom': 'plinthe chambre SO (mur sud)', 'p1': [59.8, 0], 'p2': [107.9, 0]},
@@ -120,6 +137,8 @@ def contour_local(m, w, d):
     if m.get('forme') == 'octogone':
         c = min(w, d) * 0.293
         return [[x0 + c, y0], [x1 - c, y0], [x1, y0 + c], [x1, y1 - c], [x1 - c, y1], [x0 + c, y1], [x0, y1 - c], [x0, y0 + c]]
+    if m.get('forme') == 'rond':          # cercle (ou ellipse) approché par 36 côtés
+        return [[round(w / 2 * math.cos(2 * math.pi * k / 36), 6), round(d / 2 * math.sin(2 * math.pi * k / 36), 6)] for k in range(36)]
     return R(x0, y0, x1, y1)
 
 
@@ -133,7 +152,7 @@ def echantillons_meuble(pl, m, n=12):
     w, d = dims(pl, m)
     loc = contour_local(m, w, d)
     pts = [(-w / 2 + .05 + (w - .1) * i / n, -d / 2 + .05 + (d - .1) * j / n) for i in range(n + 1) for j in range(n + 1)]
-    if m.get('forme') == 'octogone':
+    if m.get('forme', 'rect') != 'rect':
         pts = [p for p in pts if point_dans(*p, loc)]
     return [tuple(vers_monde(pl, *p)) for p in pts]
 
@@ -205,9 +224,10 @@ def problemes(meubles, params):
         if e['piece'] is None:
             out.append({'uid': e['uid'], 'type': 'hors_piece', 'message': f"{nom} : hors des pièces"})
             continue
-        if any(not point_dans(*p, PIECES[e['piece']]) for p in pts):
+        zone = ZONE[e['piece']]
+        if any(not point_dans(*p, CONTOUR_ZONE[zone]) for p in pts):
             out.append({'uid': e['uid'], 'type': 'mur', 'message': f"{nom} : traverse un mur ou sort de la pièce"})
-        for fn, fp in FIXES.get(e['piece'], []):
+        for fn, fp in fixes_zone(zone):
             if any(point_dans(*p, fp) for p in pts):
                 out.append({'uid': e['uid'], 'type': 'fixe', 'message': f"{nom} : chevauche {fn}"})
         for porte in PORTES:
@@ -249,9 +269,9 @@ def _dist_np(X, Y, a, b):
     return np.hypot(X - x1 - t * dx, Y - y1 - t * dy)
 
 
-def grille(piece, obstacles):
+def grille(piece, obstacles, contour=None):
     """Distance de chaque point libre (grille de 1 po) au mur ou obstacle le plus proche. -1 = occupé."""
-    P = PIECES[piece]
+    P = contour or PIECES[piece]
     xs = [p[0] for p in P]; ys = [p[1] for p in P]
     gx = np.arange(int(min(xs)), int(max(xs)) + 1, dtype=float)
     gy = np.arange(int(min(ys)), int(max(ys)) + 1, dtype=float)
@@ -338,23 +358,31 @@ def verifier(placements, params=None, cat=None):
         if m['essentiel'] and places.get(m['id'], 0) < m['quantite']:
             res['essentiels_manquants'].append(f"{m['nom']} ({places.get(m['id'], 0)}/{m['quantite']})")
     r = params['passage'] / 2
-    for piece in ('BR_SW', 'BR_NE', 'LIVING', 'BATH', 'ENTRY'):
-        ici = [e for e in meubles if e['piece'] == piece and e['m']['type'] == 'sol']
-        obstacles = [fp for _, fp in FIXES.get(piece, [])] + [e['poly'] for e in ici] + [e['zone'] for e in ici if e['zone']]
-        gx, gy, D = grille(piece, obstacles)
-        j, i = np.unravel_index(np.argmax(D), D.shape)
-        diam = round(float(2 * D[j, i]), 1)
-        res['pieces'].append({'piece': piece, 'nom': NOMS[piece], 'cercle': diam, 'centre': [float(gx[i]), float(gy[j])],
-                              'ok': diam >= params['cercle']})
-        vu = accessibles(gx, gy, D, ENTREES[piece], r)
+    cercles = {}
+    # Une grille par zone : chambre SO, chambre NE, salle de bain, et l'espace commun (séjour + passage + vestibule).
+    for zone, contour in CONTOUR_ZONE.items():
+        ici = [e for e in meubles if e['piece'] in PIECES_ZONE[zone] and e['m']['type'] == 'sol']
+        obstacles = [fp for _, fp in fixes_zone(zone)] + [e['poly'] for e in ici] + [e['zone'] for e in ici if e['zone']]
+        gx, gy, D = grille(None, obstacles, contour)
+        X, Y = np.meshgrid(gx, gy)
+        for piece in PIECES_ZONE[zone]:
+            if piece not in ONGLETS:
+                continue
+            Dp = np.where(_dans_np(X, Y, PIECES[piece]), D, -1)     # cercle centré dans la pièce, murs réels seulement
+            j, i = np.unravel_index(np.argmax(Dp), Dp.shape)
+            diam = round(float(2 * Dp[j, i]), 1)
+            cercles[piece] = {'piece': piece, 'nom': NOMS[piece], 'cercle': diam, 'centre': [float(gx[i]), float(gy[j])],
+                              'ok': diam >= params['cercle']}
+        depart = ENTREES['LIVING'] if zone == 'COMMUN' else ENTREES[zone]
+        vu = accessibles(gx, gy, D, depart, r)
         for e in ici:
             if e['m'].get('acces'):
                 ap = approches(e['pl'], e['m'])
                 cotes = [c for c, pts in ap.items() if any(_atteint(gx, gy, vu, p, tol=4) for p in pts)]
-                res['acces'].append({'uid': e['uid'], 'nom': e['m']['nom'], 'piece': piece, 'accessible': bool(cotes), 'cotes': cotes})
+                res['acces'].append({'uid': e['uid'], 'nom': e['m']['nom'], 'piece': e['piece'], 'accessible': bool(cotes), 'cotes': cotes})
             if e['m'].get('lit'):
-                def libre(x, y, piece=piece, obstacles=obstacles):
-                    return point_dans(x, y, PIECES[piece]) and not any(point_dans(x, y, o) for o in obstacles)
+                def libre(x, y, contour=contour, obstacles=obstacles):
+                    return point_dans(x, y, contour) and not any(point_dans(x, y, o) for o in obstacles)
                 w, d = dims(e['pl'], e['m'])
                 longs = ('avant', 'arriere') if w >= d else ('gauche', 'droite')
                 mesures = {nom_cote(e['pl'], c): largeur_cote(e['pl'], e['m'], c, libre) for c in longs}
@@ -362,6 +390,7 @@ def verifier(placements, params=None, cat=None):
                 transfert = max(largeurs, key=largeurs.get)
                 res['lit'].append({'uid': e['uid'], 'cotes': largeurs, 'minimums': {c: v[1] for c, v in mesures.items()},
                                    'transfert': transfert, 'ok': largeurs[transfert] >= params['cote_lit']})
+    res['pieces'] = [cercles[p] for p in ONGLETS if p in cercles]
     return res
 
 
@@ -380,5 +409,8 @@ def plan_public():
         'portes': PORTES,
         'plinthes': PLINTHES,
         'entrees': ENTREES,
+        'espace_commun': ESPACE_COMMUN,
+        'zones': ZONE,
+        'divisions': DIVISIONS,
         'drapeaux': PLAN['flags'],
     }

@@ -40,8 +40,9 @@ class Placement(BaseModel):
 
 class NouveauMeuble(BaseModel):
     nom: str = Field(min_length=1, max_length=60)
-    w: float = Field(ge=2, le=200, description='largeur (côté avant), en pouces')
-    d: float = Field(ge=1, le=200, description='profondeur, en pouces')
+    forme: str = Field(default='rect', pattern='^(rect|rond)$', description='rect : rectangulaire ; rond : cercle de diamètre w')
+    w: float = Field(ge=2, le=200, description='largeur (côté avant) ou diamètre, en pouces')
+    d: Optional[float] = Field(default=None, ge=1, le=200, description='profondeur, en pouces (ignorée pour un meuble rond)')
     type: str = Field(default='sol', pattern='^(sol|mural)$')
     acces: bool = True
     quantite: int = Field(default=1, ge=1, le=10)
@@ -86,6 +87,9 @@ def init_db():
                   'cree REAL NOT NULL, modifie REAL NOT NULL)')
         c.execute('CREATE TABLE IF NOT EXISTS meubles (id TEXT PRIMARY KEY, nom TEXT NOT NULL, w REAL NOT NULL, d REAL NOT NULL, '
                   'type TEXT NOT NULL, acces INTEGER NOT NULL, quantite INTEGER NOT NULL, cree REAL NOT NULL)')
+        # migration : colonne « forme » ajoutée après la première version (bases existantes sur le volume persistant)
+        if 'forme' not in [r[1] for r in c.execute('PRAGMA table_info(meubles)')]:
+            c.execute("ALTER TABLE meubles ADD COLUMN forme TEXT NOT NULL DEFAULT 'rect'")
         if c.execute('SELECT COUNT(*) FROM plans').fetchone()[0] == 0:
             for p in json.loads((HERE / 'data' / 'plans_initiaux.json').read_text(encoding='utf-8')):
                 now = time.time()
@@ -101,7 +105,7 @@ def meubles_perso():
     with closing(db()) as c:
         rows = c.execute('SELECT * FROM meubles ORDER BY cree').fetchall()
     return [{'id': r['id'], 'nom': r['nom'], 'categorie': 'perso', 'essentiel': False, 'w': r['w'], 'd': r['d'],
-             'forme': 'rect', 'type': r['type'], 'quantite': r['quantite'], 'acces': bool(r['acces']),
+             'forme': r['forme'], 'type': r['type'], 'quantite': r['quantite'], 'acces': bool(r['acces']),
              'note': 'Meuble créé dans l\'application.'} for r in rows]
 
 
@@ -154,9 +158,12 @@ def creer_meuble(m: NouveauMeuble):
         noms = [r['nom'] for r in c.execute('SELECT nom FROM meubles')] + [x['nom'] for x in rules.CATALOGUE['meubles']]
         if any(n.casefold() == cle for n in noms):
             raise HTTPException(409, f'un meuble nommé « {m.nom} » existe déjà')
+        if m.forme == 'rect' and m.d is None:
+            raise HTTPException(422, 'profondeur requise pour un meuble rectangulaire')
+        d = m.w if m.forme == 'rond' else m.d
         mid = 'perso-' + uuid.uuid4().hex[:10]
-        c.execute('INSERT INTO meubles VALUES (?,?,?,?,?,?,?,?)',
-                  (mid, m.nom, round(m.w, 1), round(m.d, 1), m.type, int(m.acces), m.quantite, time.time()))
+        c.execute('INSERT INTO meubles (id, nom, w, d, type, acces, quantite, cree, forme) VALUES (?,?,?,?,?,?,?,?,?)',
+                  (mid, m.nom, round(m.w, 1), round(d, 1), m.type, int(m.acces), m.quantite, time.time(), m.forme))
     return [x for x in meubles_perso() if x['id'] == mid][0]
 
 

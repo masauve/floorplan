@@ -50,3 +50,29 @@ def test_meuble_inconnu_refuse(client):
 
 def test_meubles_du_catalogue_non_supprimables(client):
     assert client.delete('/api/meubles/lit-articule').status_code == 404
+
+
+def test_creer_meuble_rond(client):
+    r = client.post('/api/meubles', json={'nom': 'Table ronde', 'forme': 'rond', 'w': 36})
+    assert r.status_code == 201
+    m = r.json()
+    assert m['forme'] == 'rond' and m['w'] == 36 and m['d'] == 36
+    res = client.post('/api/verifier', json={'placements': [{'uid': 'a', 'item': m['id'], 'x': 300, 'y': 60}]}).json()
+    assert not [p for p in res['problemes'] if p['type'] in ('mur', 'chevauchement')]
+    assert client.post('/api/meubles', json={'nom': 'Sans profondeur', 'w': 20}).status_code == 422
+
+
+def test_migration_ancienne_base(tmp_path):
+    """Une base créée avant la colonne « forme » est migrée au démarrage."""
+    import sqlite3
+    db = tmp_path / 'ancienne.db'
+    c = sqlite3.connect(db)
+    c.execute('CREATE TABLE meubles (id TEXT PRIMARY KEY, nom TEXT NOT NULL, w REAL NOT NULL, d REAL NOT NULL, '
+              'type TEXT NOT NULL, acces INTEGER NOT NULL, quantite INTEGER NOT NULL, cree REAL NOT NULL)')
+    c.execute("INSERT INTO meubles VALUES ('perso-x','Vieux',10,10,'sol',1,1,0)"); c.commit(); c.close()
+    os.environ['DB_PATH'] = str(db)
+    import app.main as main
+    importlib.reload(main)
+    with TestClient(main.app) as cl:
+        vieux = [m for m in cl.get('/api/catalogue').json()['meubles'] if m['id'] == 'perso-x'][0]
+        assert vieux['forme'] == 'rect'

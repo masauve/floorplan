@@ -127,6 +127,9 @@ function contourLocal(m, w, d) {
     const c = Math.min(w, d) * 0.293;
     return [[x0 + c, y0], [x1 - c, y0], [x1, y0 + c], [x1, y1 - c], [x1 - c, y1], [x0 + c, y1], [x0, y1 - c], [x0, y0 + c]];
   }
+  if (m.forme === 'rond') {               // cercle (ou ellipse) approché par 36 côtés, comme sur le serveur
+    return Array.from({ length: 36 }, (_, k) => [w / 2 * Math.cos(2 * Math.PI * k / 36), d / 2 * Math.sin(2 * Math.PI * k / 36)]);
+  }
   return [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
 }
 function empreinte(pl, m) {
@@ -137,7 +140,7 @@ function echantillonsMeuble(pl, m, n = 12) {
   const [w, d] = dims(pl, m), loc = contourLocal(m, w, d), out = [];
   for (let i = 0; i <= n; i++) for (let j = 0; j <= n; j++) {
     const lx = -w / 2 + 0.05 + (w - 0.1) * i / n, ly = -d / 2 + 0.05 + (d - 0.1) * j / n;
-    if (m.forme !== 'octogone' || pointDans(lx, ly, loc)) out.push(versMonde(pl, lx, ly));
+    if ((m.forme || 'rect') === 'rect' || pointDans(lx, ly, loc)) out.push(versMonde(pl, lx, ly));
   }
   return out;
 }
@@ -149,6 +152,19 @@ function zoneInclinaison(pl, m) {
 const DIRECTIONS = ['est', 'nord-est', 'nord', 'nord-ouest', 'ouest', 'sud-ouest', 'sud', 'sud-est'];
 function cardinal(vx, vy) { return DIRECTIONS[((Math.round(Math.atan2(vy, vx) * 180 / Math.PI / 45) % 8) + 8) % 8]; }
 function directionDevant(pl) { const [c, s] = cs(pl.rot || 0); return [-s, -c]; }
+/* Contour réel (murs) de l'espace où se trouve une pièce : le séjour, le passage et le vestibule ne font qu'un. */
+function contourZone(piece) {
+  if (S.plan.zones[piece] === 'COMMUN') return S.plan.espace_commun;
+  return S.plan.pieces.find((r) => r.id === piece).polygone;
+}
+function fixesZone(piece) {
+  const z = S.plan.zones[piece];
+  return Object.entries(S.plan.fixes).filter(([p]) => S.plan.zones[p] === z).flatMap(([, f]) => f);
+}
+const proche = (a, b) => Math.abs(a[0] - b[0]) < 0.2 && Math.abs(a[1] - b[1]) < 0.2;
+function estDivision(a, b) {
+  return S.plan.divisions.some(([p, q]) => (proche(a, p) && proche(b, q)) || (proche(a, q) && proche(b, p)));
+}
 function pieceDe(x, y) {
   const p = S.plan.pieces.find((r) => pointDans(x, y, r.polygone));
   return p ? p.id : null;
@@ -171,9 +187,9 @@ function controles() {
   for (const e of sol) {
     const nom = e.m.nom;
     if (!e.piece) { out.push({ uid: e.pl.uid, msg: `${nom} : hors des pièces` }); continue; }
-    const room = S.plan.pieces.find((r) => r.id === e.piece).polygone;
-    if (e.pts.some((p) => !pointDans(p[0], p[1], room))) out.push({ uid: e.pl.uid, msg: `${nom} : traverse un mur ou sort de la pièce` });
-    for (const f of (S.plan.fixes[e.piece] || [])) {
+    const contour = contourZone(e.piece);
+    if (e.pts.some((p) => !pointDans(p[0], p[1], contour))) out.push({ uid: e.pl.uid, msg: `${nom} : traverse un mur ou sort de la pièce` });
+    for (const f of fixesZone(e.piece)) {
       if (e.pts.some((p) => pointDans(p[0], p[1], f.polygone))) out.push({ uid: e.pl.uid, msg: `${nom} : chevauche ${f.nom}` });
     }
     for (const porte of S.plan.portes) {
@@ -193,7 +209,7 @@ function controles() {
   S.problemes = out;
   const ul = $('problemes');
   ul.innerHTML = '';
-  const dansPiece = (u) => { const pl = S.placements.find((x) => x.uid === u); return pl && pieceDe(pl.x, pl.y) === S.onglet; };
+  const dansPiece = (u) => { const pl = S.placements.find((x) => x.uid === u); return pl && dansLaPiece(pl, S.onglet); };
   const affiches = S.onglet ? out.filter((p) => dansPiece(p.uid) || (p.uid2 && dansPiece(p.uid2))) : out;
   if (!affiches.length) { ul.innerHTML = `<li class="ok">Aucun chevauchement, mur, porte ou plinthe en conflit${S.onglet ? ' dans cette pièce' : ''}.</li>`; }
   if (S.onglet && out.length > affiches.length) {
@@ -265,8 +281,17 @@ function dessinerPlan() {
 
 /* ------------------------------------------------------------------ onglets par pièce */
 const pieceOnglet = () => S.onglet && S.plan.pieces.find((r) => r.id === S.onglet);
+/* Un meuble appartient à l'onglet d'une pièce s'il la chevauche, même si son centre est de l'autre côté
+   d'une ligne de division (ex. une table à cheval entre le séjour et le passage). */
+function dansLaPiece(pl, pieceId) {
+  const m = S.catById[pl.item];
+  if (!m) return false;
+  if (pieceDe(pl.x, pl.y) === pieceId) return true;
+  const poly = S.plan.pieces.find((r) => r.id === pieceId).polygone;
+  return echantillonsMeuble(pl, m, 4).some(([x, y]) => pointDans(x, y, poly));
+}
 function visible(pl) {
-  return !S.onglet || pl.uid === S.sel || (glisse && glisse.id === pl.uid) || pieceDe(pl.x, pl.y) === S.onglet;
+  return !S.onglet || pl.uid === S.sel || (glisse && glisse.id === pl.uid) || dansLaPiece(pl, S.onglet);
 }
 function vueOnglet() {
   const p = pieceOnglet();
@@ -290,12 +315,17 @@ function dessinerMasque() {
     else el('polygon', { points: pts(w.pts), fill: T.mur }, murs);
   }
   for (const pl of S.plan.plinthes) el('line', { x1: pl.p1[0], y1: -pl.p1[1], x2: pl.p2[0], y2: -pl.p2[1], stroke: T.plinthe, 'stroke-width': 1.6 }, murs);
-  el('polygon', { points: pts(p.polygone), fill: 'none', stroke: T.contour, 'stroke-width': 0.8 * T.epais }, gMasque);
+  for (let i = 0; i < p.polygone.length; i++) {
+    const a = p.polygone[i], b = p.polygone[(i + 1) % p.polygone.length], div = estDivision(a, b);
+    el('line', { x1: a[0], y1: -a[1], x2: b[0], y2: -b[1], stroke: T.contour, 'stroke-width': (div ? 0.5 : 0.8) * T.epais,
+      'stroke-dasharray': div ? '3,2' : 'none', 'stroke-linecap': 'round' }, gMasque).appendChild(document.createElementNS(NS, 'title')).textContent =
+      div ? 'Ligne de division (pas un mur) : les meubles peuvent la traverser' : '';
+  }
 }
 function dessinerOnglets() {
   const nav = $('onglets');
   nav.innerHTML = '';
-  const nb = (id) => S.placements.filter((pl) => S.catById[pl.item]?.type === 'sol' && pieceDe(pl.x, pl.y) === id).length;
+  const nb = (id) => S.placements.filter((pl) => S.catById[pl.item]?.type === 'sol' && dansLaPiece(pl, id)).length;
   const items = [{ id: null, nom: 'Plan complet' }, ...S.plan.pieces.filter((p) => p.onglet).map((p) => ({ id: p.id, nom: p.nom }))];
   for (const it of items) {
     const d = document.createElement('div');
@@ -326,7 +356,7 @@ function dessinerPanneauPiece() {
   sec.hidden = !p;
   if (!p) return;
   $('piece-titre').textContent = p.nom;
-  const ici = S.placements.filter((pl) => S.catById[pl.item] && pieceDe(pl.x, pl.y) === p.id);
+  const ici = S.placements.filter((pl) => dansLaPiece(pl, p.id));
   const res = S.resultats && S.resultats.pieces.find((r) => r.piece === p.id);
   let h = `<p class="aide">Emprise ${r1(p.emprise[0])} × ${r1(p.emprise[1])} po · ${p.surface_pi2} pi²</p>`;
   if (res) h += `<p>Plus grand cercle libre : <b>${res.cercle} po</b> <span class="${res.ok ? 'ok-txt' : 'ko-txt'}">${res.ok ? 'OK' : 'insuffisant'}</span></p>`;
@@ -364,7 +394,7 @@ function dessinerMeubles() {
     el('polygon', { points: pts(poly), fill: couleur, 'fill-opacity': mince ? 0.95 : 0.82, stroke, 'stroke-width': sw }, g);
     // repère du devant : trait blanc au milieu du côté avant
     const [x0, y0, x1, y1] = bornes(poly);
-    if (!mince && m.forme !== 'octogone') {
+    if (!mince && (m.forme || 'rect') === 'rect') {
       const [w, d] = dims(pl, m), L = Math.min(6, w / 3);
       const [ax, ay] = versMonde(pl, -L, -d / 2 + 0.6), [bx, by] = versMonde(pl, L, -d / 2 + 0.6);
       el('line', { x1: ax, y1: -ay, x2: bx, y2: -by, stroke: T.devant, 'stroke-width': 1.2 }, g);
@@ -425,7 +455,7 @@ function redimensionner(pl, cote, depart, mx, my) {
 function alignerMur(pl) {
   const m = S.catById[pl.item], piece = pieceDe(pl.x, pl.y);
   if (!piece) return alert('Placez d\'abord le meuble dans une pièce.');
-  const poly = S.plan.pieces.find((r) => r.id === piece).polygone;
+  const poly = contourZone(piece);          // murs réels seulement (pas les lignes de division)
   let best = null;
   for (let i = 0; i < poly.length; i++) {
     const a = poly[i], b = poly[(i + 1) % poly.length];
@@ -571,7 +601,7 @@ function dessinerSelection() {
   const orient = cardinal(...directionDevant(pl));
   box.innerHTML = `
     <div><b>${esc(m.nom)}</b> <span class="badge">${NOMS_CATEGORIES[m.categorie] || m.categorie}</span>${m.essentiel ? ' <span class="badge ess">essentiel</span>' : ''}</div>
-    <div class="aide">${r1(w)} × ${r1(d)} po · ${nomPiece} · devant vers le ${orient} (${r1(pl.rot || 0)}°)${m.note ? '<br>' + esc(m.note) : ''}</div>
+    <div class="aide">${m.forme === 'rond' && w === d ? `rond, Ø ${r1(w)} po` : `${r1(w)} × ${r1(d)} po`} · ${nomPiece} · devant vers le ${orient} (${r1(pl.rot || 0)}°)${m.note ? '<br>' + esc(m.note) : ''}</div>
     <div class="aide">emprise x ${r1(x0)}–${r1(x1)} · y ${r1(y0)}–${r1(y1)}</div>
     <div class="champs">
       <label>Centre x (po)<input id="s-x" type="number" step="0.5" value="${r1(pl.x)}"></label>
@@ -667,7 +697,7 @@ function dessinerCatalogue() {
       if (m.inclinaison) badges.push(`<span class="badge">${m.inclinaison} po incliné</span>`);
       if (m.redimensionnable) badges.push('<span class="badge">dimensions ajustables</span>');
       badges.push(`<span class="badge">${n}/${m.quantite} placé${m.quantite > 1 ? 's' : ''}</span>`);
-      d.innerHTML = `<div><div class="nom">${esc(m.nom)}</div><div class="dim">${m.w} × ${m.d} po${m.forme === 'octogone' ? ' (octogone)' : ''}</div></div>
+      d.innerHTML = `<div><div class="nom">${esc(m.nom)}</div><div class="dim">${m.forme === 'rond' ? `rond, Ø ${m.w} po` : `${m.w} × ${m.d} po${m.forme === 'octogone' ? ' (octogone)' : ''}`}</div></div>
         <div class="actions">${m.categorie === 'perso' ? '<button class="danger supprimer" title="Supprimer ce meuble du catalogue">×</button>' : ''}
         <button class="ajouter" title="Ajouter" ${n >= m.quantite ? 'disabled' : ''}>+</button></div><div class="badges">${badges.join('')}</div>`;
       d.querySelector('button.ajouter').onclick = () => ajouterAuCentre(m.id);
@@ -692,8 +722,9 @@ async function rechargerCatalogue() {
 async function creerMeuble(ev) {
   ev.preventDefault();
   $('m-erreur').textContent = '';
+  const rond = $('m-forme').value === 'rond';
   const corps = {
-    nom: $('m-nom').value.trim(), w: +$('m-w').value, d: +$('m-d').value, type: $('m-type').value,
+    nom: $('m-nom').value.trim(), forme: rond ? 'rond' : 'rect', w: +$('m-w').value, d: rond ? null : +$('m-d').value, type: $('m-type').value,
     quantite: +$('m-quantite').value, acces: $('m-acces').checked,
   };
   const placer = $('m-placer').checked;
@@ -913,6 +944,16 @@ async function demarrer() {
   };
   $('nom-plan').oninput = () => marquerModifie(true);
   $('form-meuble').onsubmit = creerMeuble;
+  const majForme = () => {
+    const rond = $('m-forme').value === 'rond';
+    $('m-w-libelle').textContent = rond ? 'Diamètre (po)' : 'Largeur (po)';
+    $('m-d-champ').hidden = rond;
+    $('m-d').required = !rond;
+    $('m-aide-dim').textContent = rond ? 'Diamètre = largeur du meuble rond, d\'un bord à l\'autre.'
+      : 'Largeur = côté avant (celui qu\'on utilise). Profondeur = du mur vers la pièce.';
+  };
+  $('m-forme').onchange = majForme; majForme();
+  $('form-meuble').addEventListener('reset', () => setTimeout(majForme, 0));
   $('btn-zoom-plus').onclick = () => zoomer(1 / 1.25);
   $('btn-zoom-moins').onclick = () => zoomer(1.25);
   $('btn-recentrer').onclick = recentrer;

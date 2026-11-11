@@ -19,7 +19,7 @@ def test_v3_cercles():
     cercles = {p['piece']: p['cercle'] for p in res['pieces']}
     assert cercles['BR_SW'] == 38.0
     assert cercles['BR_NE'] == 62.0   # 61.6 avant le retrait du placard C3 (pas un vrai meuble, confirmé le 2026-11-11)
-    assert cercles['LIVING'] == 68.0
+    assert cercles['LIVING'] == 71.9   # 68.0 quand la ligne séjour/passage comptait comme un mur (corrigé le 2026-11-11)
     assert cercles['BATH'] == 51.1
 
 
@@ -100,3 +100,26 @@ def test_chevauchement_en_biais():
     c = {'uid': 'c', 'item': 'fauteuil', 'x': 344, 'y': 60, 'rot': 45}    # 44 po d'écart > 42.4 : libre
     assert any(p['type'] == 'chevauchement' for p in rules.verifier([a, b])['problemes'])
     assert not any(p['type'] == 'chevauchement' for p in rules.verifier([a, c])['problemes'])
+
+
+# ------------------------------------------------------------------ espace commun et meubles ronds
+def test_ligne_de_division_nest_pas_un_mur():
+    """Un meuble à cheval sur la ligne séjour/passage (imaginaire) est accepté ; à travers un vrai mur, il est refusé."""
+    a_cheval = [{'uid': 'a', 'item': 'fauteuil', 'x': 226, 'y': 171, 'rot': 0}]     # traverse la ligne (199.4,168.4)-(252.7,175.2)
+    assert rules.piece_de(226, 171) in ('LIVING', 'PASSAGE')
+    assert not any(p['type'] == 'mur' for p in rules.verifier(a_cheval)['problemes'])
+    contre_mur = [{'uid': 'b', 'item': 'fauteuil', 'x': 140, 'y': 60, 'rot': 0}]    # traverse le mur ouest du séjour (x 131.9)
+    assert any(p['type'] == 'mur' for p in rules.verifier(contre_mur)['problemes'])
+
+
+def test_meuble_rond():
+    cat = {**rules.CAT, 'rond': {'id': 'rond', 'nom': 'Table ronde', 'categorie': 'perso', 'essentiel': False, 'w': 30, 'd': 30,
+                                 'forme': 'rond', 'type': 'sol', 'quantite': 1, 'acces': True}}
+    pl = {'uid': 'r', 'item': 'rond', 'x': 300, 'y': 60, 'rot': 0}
+    poly = rules.empreinte(pl, cat['rond'])
+    assert len(poly) == 36 and all(abs(math.hypot(x - 300, y - 60) - 15) < 1e-6 for x, y in poly)
+    # deux tables rondes de 30 po à 31 po de centre à centre ne se touchent pas (des carrés de 30 se toucheraient presque)
+    deux = [pl, dict(pl, uid='s', x=322, y=82)]     # 31.1 po de centre à centre, en diagonale
+    assert not any(p['type'] == 'chevauchement' for p in rules.verifier(deux, cat=cat)['problemes'])
+    trop_pres = [pl, dict(pl, uid='s', x=320, y=78)]  # 26.9 po : chevauchement
+    assert any(p['type'] == 'chevauchement' for p in rules.verifier(trop_pres, cat=cat)['problemes'])

@@ -142,3 +142,4 @@ svg text { pointer-events: none; font-family: system-ui, sans-serif; }
 #panneau-piece .liste li.sel { background: var(--sel-ligne); font-weight: 600; }
 .sync { font-size: 11px; color: var(--ok); margin-left: 6px; }
 header .sync { color: var(--etat); }
+#m-d-champ[hidden] { display: none; }

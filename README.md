@@ -7,7 +7,7 @@ Web app to try furniture layouts on the floor plan of the 4½ Style D apartment 
 - Drag, rotate to any angle (90° / 15° / 1° steps, typed angle, or "align with the nearest wall" for diagonal walls), nudge (arrow keys), resize custom pieces, save / open / copy layouts.
 - One tab per room (bedrooms, living/kitchen, bathroom, entry): zoomed on the room, rest of the apartment faded, only that room's furniture, room panel with its pieces and measurements. All tabs edit the same layout. The ↗ button opens a room in its own browser tab; windows showing the same layout stay in sync both ways, unsaved changes included (BroadcastChannel). Address format: `#piece=BR_NE&plan=<id>`.
 - Five skins ("Apparence" menu): Classique, Sombre, Contraste élevé (larger text, thick outlines), Nature, Sable. Interface colours are CSS variables (`style.css`), plan colours are in `THEMES` (`app.js`). The choice is saved per browser (localStorage) and applied to other open windows.
-- Create your own rectangular pieces (name, width, depth, floor or wall-mounted, quantity, walker access). They are stored in the database, shared by everyone, and can be deleted when no saved layout uses them.
+- Create your own pieces, rectangular or round (name, width/depth or diameter, floor or wall-mounted, quantity, walker access). They are stored in the database, shared by everyone, and can be deleted when no saved layout uses them.
 - Live checks in the browser: overlaps, walls, door swing, distance to baseboard heaters.
 - Full check on the server: largest free turning circle per room (default 48 in), 36-in walker paths from each room entrance to every piece that must be reached, bed transfer side (36 in), missing essential pieces.
 
@@ -49,4 +49,5 @@ Saved layouts live in SQLite on the `floorplan-donnees` PVC (one replica, `Recre
 
 Inches; origin = inside south-west corner of the south-west bedroom; x east, y north. Rotation is in degrees, clockwise on the plan; a piece's "front" faces south at 0°, west at 90°. Geometry (outline, collisions, reclining zone, bed sides, access points) is computed in each piece's own frame, so any angle works.
 Defaults (editable in the app): walker path 36 in, turning circle 48 in, heater distance 12 in, bed transfer side 36 in. Recliners reserve a 64-in reclining zone in front of them.
+The living room, the passage and the entry are one open space: the lines between them are not walls. Wall checks, turning circles and walker paths use the real outline of that space (`ESPACE_COMMUN` in `rules.py`); room tabs show those lines dashed and include any piece that overlaps the room.
 Some plan values are estimated (±2–3 in); see `meta.source_tags` and `flags` in `floorplan_data.json`.

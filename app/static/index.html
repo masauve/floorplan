@@ -27,14 +27,15 @@
     <h2>Meubles</h2>
     <p class="aide">Cliquez sur « + » pour ajouter un meuble au centre de la vue, puis glissez-le.</p>
     <details id="creer-meuble">
-      <summary>Créer un meuble rectangulaire…</summary>
+      <summary>Créer un meuble (rectangulaire ou rond)…</summary>
       <form id="form-meuble" autocomplete="off">
-        <label>Nom<input id="m-nom" type="text" maxlength="60" required placeholder="ex. Étagère basse"></label>
+        <label>Nom<input id="m-nom" type="text" maxlength="60" required placeholder="ex. Étagère basse, table ronde"></label>
+        <label>Forme<select id="m-forme"><option value="rect">Rectangulaire</option><option value="rond">Rond</option></select></label>
         <div class="deux">
-          <label>Largeur (po)<input id="m-w" type="number" min="2" max="200" step="0.5" required></label>
-          <label>Profondeur (po)<input id="m-d" type="number" min="1" max="200" step="0.5" required></label>
+          <label><span id="m-w-libelle">Largeur (po)</span><input id="m-w" type="number" min="2" max="200" step="0.5" required></label>
+          <label id="m-d-champ">Profondeur (po)<input id="m-d" type="number" min="1" max="200" step="0.5" required></label>
         </div>
-        <p class="aide">Largeur = côté avant (celui qu'on utilise). Profondeur = du mur vers la pièce.</p>
+        <p id="m-aide-dim" class="aide">Largeur = côté avant (celui qu'on utilise). Profondeur = du mur vers la pièce.</p>
         <div class="deux">
           <label>Type<select id="m-type"><option value="sol">Au sol</option><option value="mural">Mural (accroché au mur)</option></select></label>
           <label>Quantité<input id="m-quantite" type="number" min="1" max="10" step="1" value="1" required></label>
