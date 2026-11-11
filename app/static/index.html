@@ -25,13 +25,32 @@
   <aside id="catalogue">
     <h2>Meubles</h2>
     <p class="aide">Cliquez sur « + » pour ajouter un meuble au centre de la vue, puis glissez-le.</p>
+    <details id="creer-meuble">
+      <summary>Créer un meuble rectangulaire…</summary>
+      <form id="form-meuble" autocomplete="off">
+        <label>Nom<input id="m-nom" type="text" maxlength="60" required placeholder="ex. Étagère basse"></label>
+        <div class="deux">
+          <label>Largeur (po)<input id="m-w" type="number" min="2" max="200" step="0.5" required></label>
+          <label>Profondeur (po)<input id="m-d" type="number" min="1" max="200" step="0.5" required></label>
+        </div>
+        <p class="aide">Largeur = côté avant (celui qu'on utilise). Profondeur = du mur vers la pièce.</p>
+        <div class="deux">
+          <label>Type<select id="m-type"><option value="sol">Au sol</option><option value="mural">Mural (accroché au mur)</option></select></label>
+          <label>Quantité<input id="m-quantite" type="number" min="1" max="10" step="1" value="1" required></label>
+        </div>
+        <label class="case"><input id="m-acces" type="checkbox" checked> Doit être accessible avec la marchette</label>
+        <label class="case"><input id="m-placer" type="checkbox" checked> Le placer sur le plan après la création</label>
+        <button type="submit" class="primaire">Créer le meuble</button>
+        <p id="m-erreur" class="ko-txt"></p>
+      </form>
+    </details>
     <div id="liste-catalogue"></div>
   </aside>
   <section id="zone-plan">
     <svg id="plan" xmlns="http://www.w3.org/2000/svg"></svg>
     <div class="aide-plan">Glisser : déplacer · <b>R</b> : tourner · <b>Suppr</b> : enlever · flèches : 1 po (Maj : 6 po) · molette : zoom · glisser le fond : déplacer la vue</div>
     <div class="legende">
-      <span><i class="c-existant"></i>Existant</span><span><i class="c-nouveau"></i>À acheter</span><span><i class="c-sur_mesure"></i>Sur mesure</span>
+      <span><i class="c-existant"></i>Existant</span><span><i class="c-nouveau"></i>À acheter</span><span><i class="c-sur_mesure"></i>Sur mesure</span><span><i class="c-perso"></i>Créé</span>
       <span><i class="c-probleme"></i>Problème</span><span><i class="c-plinthe"></i>Plinthe chauffante</span>
     </div>
   </section>

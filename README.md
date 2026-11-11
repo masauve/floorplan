@@ -5,6 +5,7 @@ Web app to try furniture layouts on the floor plan of the 4½ Style D apartment 
 - Floor plan drawn to scale (inches) from `app/data/floorplan_data.json`, extracted from the residence's PDF (1:100).
 - Furniture catalog (existing pieces from `currentfurniture.csv` + suggested purchases + custom island) in `app/data/catalogue.json`.
 - Drag, rotate (R), nudge (arrow keys), resize custom pieces, save / open / copy layouts.
+- Create your own rectangular pieces (name, width, depth, floor or wall-mounted, quantity, walker access). They are stored in the database, shared by everyone, and can be deleted when no saved layout uses them.
 - Live checks in the browser: overlaps, walls, door swing, distance to baseboard heaters.
 - Full check on the server: largest free turning circle per room (default 48 in), 36-in walker paths from each room entrance to every piece that must be reached, bed transfer side (36 in), missing essential pieces.
 
@@ -36,7 +37,7 @@ Saved layouts live in SQLite on the `floorplan-donnees` PVC (one replica, `Recre
 | Path | Content |
 |---|---|
 | `app/rules.py` | Geometry and rule engine (numpy) |
-| `app/main.py` | FastAPI: `/api/plan`, `/api/catalogue`, `/api/plans`, `/api/verifier`, `/healthz`, `/readyz` |
+| `app/main.py` | FastAPI: `/api/plan`, `/api/catalogue`, `/api/meubles`, `/api/plans`, `/api/verifier`, `/healthz`, `/readyz` |
 | `app/static/` | Interface (HTML, CSS, plain JavaScript, SVG) |
 | `app/data/` | Floor plan, catalog, starting layout |
 | `openshift/` | Kustomize manifests |

@@ -52,3 +52,13 @@ footer { font-size: 11px; color: #5b6878; padding: 4px 14px; border-top: 1px sol
 svg text { pointer-events: none; font-family: system-ui, sans-serif; }
 .meuble-svg { cursor: grab; }
 .meuble-svg.drag { cursor: grabbing; }
+.c-perso { background: #2a9d8f; }
+#creer-meuble { background: #fff; border: 1px solid #d9dee5; border-radius: 4px; padding: 6px 8px; margin-bottom: 10px; }
+#creer-meuble summary { cursor: pointer; font-weight: 600; color: #2f6db5; }
+#form-meuble { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+#form-meuble label { font-size: 12px; display: flex; flex-direction: column; gap: 2px; }
+#form-meuble label.case { flex-direction: row; align-items: center; gap: 6px; }
+#form-meuble .deux { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+#form-meuble input[type=text], #form-meuble input[type=number], #form-meuble select { width: 100%; }
+#m-erreur:empty { display: none; }
+.meuble .actions { display: flex; gap: 4px; }

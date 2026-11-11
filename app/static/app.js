@@ -3,7 +3,8 @@
 
 const NS = 'http://www.w3.org/2000/svg';
 const FRONT = { 0: [0, -1], 90: [-1, 0], 180: [0, 1], 270: [1, 0] };
-const COULEURS = { existant: '#4a7fd4', nouveau: '#f0a030', sur_mesure: '#9b6cd1' };
+const COULEURS = { existant: '#4a7fd4', nouveau: '#f0a030', sur_mesure: '#9b6cd1', perso: '#2a9d8f' };
+const NOMS_CATEGORIES = { existant: 'existant', nouveau: 'à acheter', sur_mesure: 'sur mesure', perso: 'créé' };
 
 const S = {
   plan: null, cat: [], catById: {}, placements: [], sel: null,
@@ -23,6 +24,8 @@ function el(tag, attrs = {}, parent) {
 const pts = (poly) => poly.map(([x, y]) => `${x},${-y}`).join(' ');
 const r1 = (v) => Math.round(v * 10) / 10;
 const uid = () => Math.random().toString(36).slice(2, 10);
+/* Échappe le texte saisi par les utilisateurs avant de l'insérer en HTML (application publique). */
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 async function api(url, opts = {}) {
   const r = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...opts });
   if (!r.ok) {
@@ -367,8 +370,8 @@ function dessinerSelection() {
   const nomPiece = piece ? S.plan.pieces.find((r) => r.id === piece).nom : 'hors des pièces';
   const orient = { 0: 'sud', 90: 'ouest', 180: 'nord', 270: 'est' }[pl.rot];
   box.innerHTML = `
-    <div><b>${m.nom}</b> <span class="badge">${m.categorie.replace('_', ' ')}</span>${m.essentiel ? ' <span class="badge ess">essentiel</span>' : ''}</div>
-    <div class="aide">${r1(sx)} × ${r1(sy)} po · ${nomPiece} · devant vers le ${orient}${m.note ? '<br>' + m.note : ''}</div>
+    <div><b>${esc(m.nom)}</b> <span class="badge">${NOMS_CATEGORIES[m.categorie] || m.categorie}</span>${m.essentiel ? ' <span class="badge ess">essentiel</span>' : ''}</div>
+    <div class="aide">${r1(sx)} × ${r1(sy)} po · ${nomPiece} · devant vers le ${orient}${m.note ? '<br>' + esc(m.note) : ''}</div>
     <div class="aide">x ${r1(x0)}–${r1(x1)} · y ${r1(y0)}–${r1(y1)}</div>
     <div class="champs">
       <label>Centre x (po)<input id="s-x" type="number" step="0.5" value="${pl.x}"></label>
@@ -423,12 +426,14 @@ function compte(id) { return S.placements.filter((p) => p.item === id).length; }
 function dessinerCatalogue() {
   const box = $('liste-catalogue');
   box.innerHTML = '';
-  const groupes = { existant: 'Meubles existants', nouveau: 'À acheter', sur_mesure: 'Sur mesure' };
+  const groupes = { perso: 'Meubles créés', existant: 'Meubles existants', nouveau: 'À acheter', sur_mesure: 'Sur mesure' };
   for (const [cat, titre] of Object.entries(groupes)) {
+    const liste = S.cat.filter((x) => x.categorie === cat);
+    if (!liste.length) continue;
     const g = document.createElement('div');
     g.className = 'groupe-cat';
     g.innerHTML = `<h3>${titre}</h3>`;
-    for (const m of S.cat.filter((x) => x.categorie === cat)) {
+    for (const m of liste) {
       const n = compte(m.id);
       const d = document.createElement('div');
       d.className = 'meuble';
@@ -440,17 +445,57 @@ function dessinerCatalogue() {
       if (m.inclinaison) badges.push(`<span class="badge">${m.inclinaison} po incliné</span>`);
       if (m.redimensionnable) badges.push('<span class="badge">dimensions ajustables</span>');
       badges.push(`<span class="badge">${n}/${m.quantite} placé${m.quantite > 1 ? 's' : ''}</span>`);
-      d.innerHTML = `<div><div class="nom">${m.nom}</div><div class="dim">${m.w} × ${m.d} po${m.forme === 'octogone' ? ' (octogone)' : ''}</div></div>
-        <button title="Ajouter" ${n >= m.quantite ? 'disabled' : ''}>+</button><div class="badges">${badges.join('')}</div>`;
-      d.querySelector('button').onclick = () => {
-        const v = S.vb;
-        ajouter(m.id, Math.round(v.x + v.w / 2), Math.round(-(v.y + v.h / 2)));
-      };
+      d.innerHTML = `<div><div class="nom">${esc(m.nom)}</div><div class="dim">${m.w} × ${m.d} po${m.forme === 'octogone' ? ' (octogone)' : ''}</div></div>
+        <div class="actions">${m.categorie === 'perso' ? '<button class="danger supprimer" title="Supprimer ce meuble du catalogue">×</button>' : ''}
+        <button class="ajouter" title="Ajouter" ${n >= m.quantite ? 'disabled' : ''}>+</button></div><div class="badges">${badges.join('')}</div>`;
+      d.querySelector('button.ajouter').onclick = () => ajouterAuCentre(m.id);
+      const sup = d.querySelector('button.supprimer');
+      if (sup) sup.onclick = () => supprimerMeuble(m).catch((e) => alert(e.message));
       g.appendChild(d);
     }
     box.appendChild(g);
   }
 }
+function ajouterAuCentre(item) {
+  const v = S.vb;
+  ajouter(item, Math.round(v.x + v.w / 2), Math.round(-(v.y + v.h / 2)));
+}
+
+/* ------------------------------------------------------------------ meubles créés par l'utilisateur */
+async function rechargerCatalogue() {
+  const cat = await api('/api/catalogue');
+  S.cat = cat.meubles;
+  S.catById = Object.fromEntries(cat.meubles.map((m) => [m.id, m]));
+}
+async function creerMeuble(ev) {
+  ev.preventDefault();
+  $('m-erreur').textContent = '';
+  const corps = {
+    nom: $('m-nom').value.trim(), w: +$('m-w').value, d: +$('m-d').value, type: $('m-type').value,
+    quantite: +$('m-quantite').value, acces: $('m-acces').checked,
+  };
+  const placer = $('m-placer').checked;
+  try {
+    const m = await api('/api/meubles', { method: 'POST', body: JSON.stringify(corps) });
+    await rechargerCatalogue();
+    $('form-meuble').reset();
+    $('m-quantite').value = 1; $('m-acces').checked = true; $('m-placer').checked = placer;
+    if (placer) ajouterAuCentre(m.id); else dessinerCatalogue();
+  } catch (e) {
+    $('m-erreur').textContent = `Impossible de créer le meuble : ${e.message}`;
+  }
+}
+async function supprimerMeuble(m) {
+  if (compte(m.id)) {
+    alert(`« ${m.nom} » est placé dans le plan ouvert. Enlevez-le du plan (et enregistrez) avant de le supprimer du catalogue.`);
+    return;
+  }
+  if (!confirm(`Supprimer « ${m.nom} » du catalogue pour tout le monde ?`)) return;
+  await api(`/api/meubles/${m.id}`, { method: 'DELETE' });
+  await rechargerCatalogue();
+  dessinerCatalogue();
+}
+
 function ajouter(item, x, y, modele) {
   const m = S.catById[item];
   if (compte(item) >= m.quantite) return;
@@ -484,10 +529,10 @@ function afficherResultats() {
   const nom = (uidm) => { const pl = S.placements.find((x) => x.uid === uidm); return pl ? S.catById[pl.item].nom : uidm; };
   let h = '';
   h += R.essentiels_manquants.length
-    ? `<p class="ko-txt">Meubles essentiels manquants : ${R.essentiels_manquants.join(', ')}</p>`
+    ? `<p class="ko-txt">Meubles essentiels manquants : ${esc(R.essentiels_manquants.join(', '))}</p>`
     : '<p class="ok-txt">Tous les meubles essentiels sont placés.</p>';
   h += `<h3>Cercle de rotation (${p.cercle} po)</h3><table class="res"><tr><th>Pièce</th><th>Plus grand cercle libre</th><th></th></tr>`;
-  for (const r of R.pieces) h += `<tr><td>${r.nom}</td><td>${r.cercle} po</td><td class="${r.ok ? 'ok-txt' : 'ko-txt'}">${r.ok ? 'OK' : 'insuffisant'}</td></tr>`;
+  for (const r of R.pieces) h += `<tr><td>${esc(r.nom)}</td><td>${r.cercle} po</td><td class="${r.ok ? 'ok-txt' : 'ko-txt'}">${r.ok ? 'OK' : 'insuffisant'}</td></tr>`;
   h += '</table>';
   for (const l of R.lit) {
     const c = Object.entries(l.cotes).map(([k, v]) => `${k} ${v} po (min. ${l.minimums[k]})`).join(' · ');
@@ -495,11 +540,11 @@ function afficherResultats() {
   }
   const ko = R.acces.filter((a) => !a.accessible);
   h += `<h3>Accès avec la marchette (passage ${p.passage} po)</h3>`;
-  h += ko.length ? '<ul class="liste">' + ko.map((a) => `<li data-uid="${a.uid}">${a.nom} : aucun passage de ${p.passage} po depuis l'entrée de la pièce</li>`).join('') + '</ul>'
+  h += ko.length ? '<ul class="liste">' + ko.map((a) => `<li data-uid="${esc(a.uid)}">${esc(a.nom)} : aucun passage de ${p.passage} po depuis l'entrée de la pièce</li>`).join('') + '</ul>'
     : '<p class="ok-txt">Tous les meubles à utiliser sont accessibles.</p>';
   const okA = R.acces.filter((a) => a.accessible);
-  if (okA.length) h += '<p class="aide">Accessibles : ' + okA.map((a) => `${a.nom} (${a.cotes.join(', ')})`).join(' · ') + '</p>';
-  if (R.problemes.length) h += `<h3>Problèmes</h3><ul class="liste">${R.problemes.map((x) => `<li class="${x.type === 'plinthe' ? 'info' : ''}" data-uid="${x.uid}">${x.message}</li>`).join('')}</ul>`;
+  if (okA.length) h += '<p class="aide">Accessibles : ' + okA.map((a) => `${esc(a.nom)} (${a.cotes.join(', ')})`).join(' · ') + '</p>';
+  if (R.problemes.length) h += `<h3>Problèmes</h3><ul class="liste">${R.problemes.map((x) => `<li class="${x.type === 'plinthe' ? 'info' : ''}" data-uid="${esc(x.uid)}">${esc(x.message)}</li>`).join('')}</ul>`;
   $('resultats').innerHTML = h;
   for (const li of $('resultats').querySelectorAll('li[data-uid]')) li.onclick = () => selectionner(li.dataset.uid);
 }
@@ -513,7 +558,7 @@ function marquerModifie(v = true) {
 async function chargerListe(selection) {
   const plans = await api('/api/plans');
   const sel = $('liste-plans');
-  sel.innerHTML = plans.map((p) => `<option value="${p.id}">${p.nom}</option>`).join('');
+  sel.innerHTML = plans.map((p) => `<option value="${esc(p.id)}">${esc(p.nom)}</option>`).join('');
   if (selection) sel.value = selection;
   return plans;
 }
@@ -587,6 +632,7 @@ async function demarrer() {
     marquerModifie(true); toutRedessiner();
   };
   $('nom-plan').oninput = () => marquerModifie(true);
+  $('form-meuble').onsubmit = creerMeuble;
   for (const id of ['p-plinthe']) $(id).onchange = toutRedessiner;
 }
 demarrer();

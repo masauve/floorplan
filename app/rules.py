@@ -117,11 +117,12 @@ def zone_inclinaison(pl, m):
     return R(x0, y0, x1, y1)
 
 
-def resoudre(placements):
+def resoudre(placements, cat=None):
     """Retourne la liste des meubles placés avec leur polygone, leur pièce et leur fiche catalogue."""
+    cat = cat or CAT
     out = []
     for pl in placements:
-        m = CAT.get(pl.get('item'))
+        m = cat.get(pl.get('item'))
         if not m:
             continue
         poly = empreinte(pl, m)
@@ -273,9 +274,10 @@ def largeur_cote(poly, cote, libre_fn, fenetre=30, maxi=72):
     return meilleure, min(profil)
 
 
-def verifier(placements, params=None):
+def verifier(placements, params=None, cat=None):
+    """cat : catalogue complet (fixe + meubles créés par les utilisateurs). Par défaut, le catalogue fixe."""
     params = {**DEFAUTS, **(params or {})}
-    meubles = resoudre(placements)
+    meubles = resoudre(placements, cat)
     res = {'parametres': params, 'problemes': problemes(meubles, params), 'pieces': [], 'acces': [], 'lit': [],
            'essentiels_manquants': []}
     places = {}
