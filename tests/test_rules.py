@@ -61,3 +61,42 @@ def test_ilot_redimensionne():
     ilot['x'] -= (100 - 26.8) / 2
     msgs = [p['message'] for p in rules.verifier(pl)['problemes'] if p['uid'] == 'v3-15' or p.get('uid2') == 'v3-15']
     assert any('chevauche' in m for m in msgs)
+
+
+# ------------------------------------------------------------------ rotation libre
+import math
+
+
+def test_empreinte_45_degres():
+    pl = {'uid': 'r', 'item': 'fauteuil', 'x': 300, 'y': 60, 'rot': 45}
+    poly = rules.empreinte(pl, rules.CAT['fauteuil'])
+    for x, y in poly:
+        assert math.isclose(math.hypot(x - 300, y - 60), math.hypot(15, 15), rel_tol=1e-6)
+    # un coin pointe vers le sud (y minimum = centre - 21.2)
+    assert math.isclose(min(y for _, y in poly), 60 - math.hypot(15, 15), rel_tol=1e-6)
+
+
+def test_angles_droits_inchanges():
+    pl = {'uid': 'r', 'item': 'commode-mom', 'x': 9.5, 'y': 59, 'rot': 270}
+    xs = [p[0] for p in rules.empreinte(pl, rules.CAT['commode-mom'])]; ys = [p[1] for p in rules.empreinte(pl, rules.CAT['commode-mom'])]
+    assert (min(xs), max(xs), min(ys), max(ys)) == (0, 19, 30.5, 87.5)
+
+
+def test_contre_le_mur_diagonal():
+    """Armoire 19x36 adossée au mur diagonal de la chambre NE (x − y = −2.9), devant vers le sud-est."""
+    n = (1 / math.sqrt(2), -1 / math.sqrt(2))                  # normale du mur vers la pièce
+    rot = math.degrees(math.atan2(-n[0], -n[1])) % 360          # le devant regarde la pièce : 315°
+    cx, cy = 255 + n[0] * 10, 257.9 + n[1] * 10                 # point du mur + (profondeur/2 + 0.5)
+    biais = [{'uid': 'a', 'item': 'armoire-19x36', 'x': cx, 'y': cy, 'rot': rot}]
+    assert round(rot) == 315
+    assert [p for p in rules.verifier(biais)['problemes'] if p['type'] in ('mur', 'fixe', 'chevauchement')] == []
+    droit = [dict(biais[0], rot=0)]
+    assert any(p['type'] == 'mur' for p in rules.verifier(droit)['problemes'])
+
+
+def test_chevauchement_en_biais():
+    a = {'uid': 'a', 'item': 'fauteuil', 'x': 300, 'y': 60, 'rot': 45}
+    b = {'uid': 'b', 'item': 'fauteuil', 'x': 322, 'y': 60, 'rot': 45}    # coins qui se touchent : chevauchement
+    c = {'uid': 'c', 'item': 'fauteuil', 'x': 344, 'y': 60, 'rot': 45}    # 44 po d'écart > 42.4 : libre
+    assert any(p['type'] == 'chevauchement' for p in rules.verifier([a, b])['problemes'])
+    assert not any(p['type'] == 'chevauchement' for p in rules.verifier([a, c])['problemes'])

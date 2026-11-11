@@ -67,3 +67,7 @@ svg text { pointer-events: none; font-family: system-ui, sans-serif; }
 .controles-vue button { width: 40px; height: 36px; font-size: 22px; font-weight: 700; line-height: 1; padding: 0; }
 .controles-vue button.texte { width: auto; height: 30px; font-size: 12px; font-weight: 600; padding: 0 6px; }
 #niveau-zoom { font-size: 11px; text-align: center; color: #3b4756; }
+.rotation { display: grid; grid-template-columns: repeat(3, 1fr) 1.3fr repeat(3, 1fr); gap: 4px; align-items: end; margin-bottom: 6px; }
+.rotation button { padding: 4px 2px; font-size: 12px; }
+.rotation label.angle { font-size: 11px; display: flex; flex-direction: column; gap: 2px; }
+.rotation label.angle input { width: 100%; padding: 4px; }

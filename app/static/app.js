@@ -2,7 +2,6 @@
 /* Éditeur d'aménagement – repère en pouces, y vers le nord (inversé à l'affichage). */
 
 const NS = 'http://www.w3.org/2000/svg';
-const FRONT = { 0: [0, -1], 90: [-1, 0], 180: [0, 1], 270: [1, 0] };
 const COULEURS = { existant: '#4a7fd4', nouveau: '#f0a030', sur_mesure: '#9b6cd1', perso: '#2a9d8f' };
 const NOMS_CATEGORIES = { existant: 'existant', nouveau: 'à acheter', sur_mesure: 'sur mesure', perso: 'créé' };
 
@@ -63,27 +62,47 @@ function echantillons(poly, n = 12) {
   for (let i = 0; i <= n; i++) for (let j = 0; j <= n; j++) out.push([x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * j / n]);
   return poly.length === 4 ? out : out.filter((p) => pointDans(p[0], p[1], poly));
 }
-function taille(pl, m) {
-  const w = m.redimensionnable ? (pl.w || m.w) : m.w, d = m.redimensionnable ? (pl.d || m.d) : m.d;
-  return (pl.rot % 180 === 0) ? [w, d] : [d, w];
+/* Repère local d'un meuble : origine au centre, x vers sa droite, y vers l'arrière ; le DEVANT est du côté -y.
+   rot = angle en degrés, sens horaire sur le plan (0 : devant au sud, 90 : ouest, 180 : nord, 270 : est). */
+const normAngle = (a) => { const v = Math.round((((a % 360) + 360) % 360) * 100) / 100; return v >= 360 ? 0 : v; };
+function cs(rot) {
+  const t = rot * Math.PI / 180; let c = Math.cos(t), s = Math.sin(t);
+  if (Math.abs(c) < 1e-12) c = 0; if (Math.abs(s) < 1e-12) s = 0;
+  return [c, s];
 }
-function empreinte(pl, m) {
-  const [sx, sy] = taille(pl, m);
-  const x0 = pl.x - sx / 2, y0 = pl.y - sy / 2, x1 = pl.x + sx / 2, y1 = pl.y + sy / 2;
+function versMonde(pl, lx, ly) { const [c, s] = cs(pl.rot || 0); return [pl.x + lx * c + ly * s, pl.y - lx * s + ly * c]; }
+function versLocal(pl, x, y) { const [c, s] = cs(pl.rot || 0), dx = x - pl.x, dy = y - pl.y; return [dx * c - dy * s, dx * s + dy * c]; }
+function dims(pl, m) {
+  return [m.redimensionnable ? (pl.w || m.w) : m.w, m.redimensionnable ? (pl.d || m.d) : m.d];
+}
+function contourLocal(m, w, d) {
+  const x0 = -w / 2, y0 = -d / 2, x1 = w / 2, y1 = d / 2;
   if (m.forme === 'octogone') {
-    const c = Math.min(sx, sy) * 0.293;
+    const c = Math.min(w, d) * 0.293;
     return [[x0 + c, y0], [x1 - c, y0], [x1, y0 + c], [x1, y1 - c], [x1 - c, y1], [x0 + c, y1], [x0, y1 - c], [x0, y0 + c]];
   }
   return [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
 }
-function zoneInclinaison(pl, m) {
-  const ext = (m.inclinaison || 0) - m.d;
-  if (ext <= 0) return null;
-  let [x0, y0, x1, y1] = bornes(empreinte(pl, m));
-  const [fx, fy] = FRONT[pl.rot];
-  if (fx < 0) x0 -= ext; if (fx > 0) x1 += ext; if (fy < 0) y0 -= ext; if (fy > 0) y1 += ext;
-  return [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
+function empreinte(pl, m) {
+  const [w, d] = dims(pl, m);
+  return contourLocal(m, w, d).map(([lx, ly]) => versMonde(pl, lx, ly));
 }
+function echantillonsMeuble(pl, m, n = 12) {
+  const [w, d] = dims(pl, m), loc = contourLocal(m, w, d), out = [];
+  for (let i = 0; i <= n; i++) for (let j = 0; j <= n; j++) {
+    const lx = -w / 2 + 0.05 + (w - 0.1) * i / n, ly = -d / 2 + 0.05 + (d - 0.1) * j / n;
+    if (m.forme !== 'octogone' || pointDans(lx, ly, loc)) out.push(versMonde(pl, lx, ly));
+  }
+  return out;
+}
+function zoneInclinaison(pl, m) {
+  const [w, d] = dims(pl, m), ext = (m.inclinaison || 0) - d;
+  if (ext <= 0) return null;
+  return [[-w / 2, -d / 2 - ext], [w / 2, -d / 2 - ext], [w / 2, d / 2], [-w / 2, d / 2]].map(([lx, ly]) => versMonde(pl, lx, ly));
+}
+const DIRECTIONS = ['est', 'nord-est', 'nord', 'nord-ouest', 'ouest', 'sud-ouest', 'sud', 'sud-est'];
+function cardinal(vx, vy) { return DIRECTIONS[((Math.round(Math.atan2(vy, vx) * 180 / Math.PI / 45) % 8) + 8) % 8]; }
+function directionDevant(pl) { const [c, s] = cs(pl.rot || 0); return [-s, -c]; }
 function pieceDe(x, y) {
   const p = S.plan.pieces.find((r) => pointDans(x, y, r.polygone));
   return p ? p.id : null;
@@ -100,7 +119,7 @@ function controles() {
   const items = S.placements.map((pl) => ({ pl, m: S.catById[pl.item] })).filter((e) => e.m);
   const sol = items.filter((e) => e.m.type === 'sol').map((e) => {
     const poly = empreinte(e.pl, e.m);
-    return { ...e, poly, pts: echantillons(poly), piece: pieceDe(e.pl.x, e.pl.y) };
+    return { ...e, poly, pts: echantillonsMeuble(e.pl, e.m), piece: pieceDe(e.pl.x, e.pl.y) };
   });
   const out = [];
   for (const e of sol) {
@@ -115,7 +134,7 @@ function controles() {
       if (porte.piece === e.piece && e.pts.some((p) => dansSecteur(p, porte))) out.push({ uid: e.pl.uid, msg: `${nom} : dans le débattement de la porte` });
     }
     for (const pl of S.plan.plinthes) {
-      const d = Math.min(...echantillons(e.poly, 16).map(([x, y]) => distSeg(x, y, pl.p1, pl.p2)));
+      const d = Math.min(...echantillonsMeuble(e.pl, e.m, 16).map(([x, y]) => distSeg(x, y, pl.p1, pl.p2)));
       if (d < plinthe) out.push({ uid: e.pl.uid, msg: `${nom} : à ${r1(d)} po de la ${pl.nom}`, info: true });
     }
   }
@@ -212,13 +231,12 @@ function dessinerMeubles() {
     if (pb.has(pl.uid)) { stroke = '#e03030'; sw = 1.6; } else if (pbInfo.has(pl.uid)) { stroke = '#f08a00'; sw = 1.2; }
     if (S.sel === pl.uid) { sw += 0.8; stroke = pb.has(pl.uid) ? '#e03030' : '#0b5ed7'; }
     el('polygon', { points: pts(poly), fill: couleur, 'fill-opacity': mince ? 0.95 : 0.82, stroke, 'stroke-width': sw }, g);
-    // repère du devant
-    const [x0, y0, x1, y1] = bornes(poly), [fx, fy] = FRONT[pl.rot];
+    // repère du devant : trait blanc au milieu du côté avant
+    const [x0, y0, x1, y1] = bornes(poly);
     if (!mince && m.forme !== 'octogone') {
-      const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
-      const fxp = fx ? (fx > 0 ? x1 : x0) : cx, fyp = fy ? (fy > 0 ? y1 : y0) : cy;
-      const lx = fy ? Math.min(6, (x1 - x0) / 3) : 0, ly = fx ? Math.min(6, (y1 - y0) / 3) : 0;
-      el('line', { x1: fxp - lx, y1: -(fyp - ly), x2: fxp + lx, y2: -(fyp + ly), stroke: '#fff', 'stroke-width': 1.2 }, g);
+      const [w, d] = dims(pl, m), L = Math.min(6, w / 3);
+      const [ax, ay] = versMonde(pl, -L, -d / 2 + 0.6), [bx, by] = versMonde(pl, L, -d / 2 + 0.6);
+      el('line', { x1: ax, y1: -ay, x2: bx, y2: -by, stroke: '#fff', 'stroke-width': 1.2 }, g);
     }
     if (!mince) {
       const fs = Math.max(2.2, Math.min(3.4, (x1 - x0) / 9));
@@ -230,43 +248,71 @@ function dessinerMeubles() {
   dessinerPoignees();
 }
 
-/* Poignées de redimensionnement (meubles « sur mesure ») : une au milieu de chaque côté. */
+/* Poignées de redimensionnement (meubles « sur mesure ») : une au milieu de chaque côté, dans le repère du meuble
+   (elles suivent la rotation). Le côté opposé reste fixe pendant qu'on tire. */
 const TAILLE_MIN = 6, TAILLE_MAX = 200;
+const COTES_LOCAUX = { droite: [1, 0], gauche: [-1, 0], arriere: [0, 1], avant: [0, -1] };
 function dessinerPoignees() {
   const pl = S.placements.find((p) => p.uid === S.sel);
   const m = pl && S.catById[pl.item];
   if (!m || !m.redimensionnable) return;
-  const [x0, y0, x1, y1] = bornes(empreinte(pl, m));
-  const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+  const [w, d] = dims(pl, m);
   const h = Math.max(2, S.vb.w / 110);
   const g = el('g', {}, gMeubles);
-  const cotes = { est: [x1, cy, 'ew-resize'], ouest: [x0, cy, 'ew-resize'], nord: [cx, y1, 'ns-resize'], sud: [cx, y0, 'ns-resize'] };
-  for (const [cote, [x, y, curseur]] of Object.entries(cotes)) {
-    const r = el('rect', { x: x - h / 2, y: -y - h / 2, width: h, height: h, fill: '#ffffff', stroke: '#0b5ed7', 'stroke-width': 0.8, style: `cursor:${curseur}` }, g);
+  for (const [cote, [nx, ny]] of Object.entries(COTES_LOCAUX)) {
+    const [x, y] = versMonde(pl, nx * w / 2, ny * d / 2);
+    const r = el('rect', { x: x - h / 2, y: -y - h / 2, width: h, height: h, fill: '#ffffff', stroke: '#0b5ed7', 'stroke-width': 0.8, style: 'cursor:move' }, g);
     r.addEventListener('pointerdown', (ev) => debutRedim(ev, pl.uid, cote));
   }
-  const [sx, sy] = taille(pl, m);
+  const [, , , y1] = bornes(empreinte(pl, m));
   const fs = Math.max(2.6, S.vb.w / 100);
-  el('text', { x: cx, y: -y1 - h - 1, 'font-size': fs, 'font-weight': 700, fill: '#0b5ed7', 'text-anchor': 'middle' }, g)
-    .textContent = `${r1(sx)} × ${r1(sy)} po`;
+  el('text', { x: pl.x, y: -y1 - h - 1, 'font-size': fs, 'font-weight': 700, fill: '#0b5ed7', 'text-anchor': 'middle' }, g)
+    .textContent = `${r1(w)} × ${r1(d)} po`;
 }
 function debutRedim(ev, id, cote) {
   ev.stopPropagation();
   const pl = S.placements.find((p) => p.uid === id);
-  glisse = { type: 'redim', id, cote, b: bornes(empreinte(pl, S.catById[pl.item])) };
+  const m = S.catById[pl.item], [w, d] = dims(pl, m);
+  glisse = { type: 'redim', id, cote, b: { x: pl.x, y: pl.y, rot: pl.rot || 0, w, d } };   // état au début du geste
   $('plan').setPointerCapture(ev.pointerId);
 }
-function redimensionner(pl, cote, b, mx, my) {
-  let [x0, y0, x1, y1] = b;
+function redimensionner(pl, cote, depart, mx, my) {
+  const [lx, ly] = versLocal(depart, mx, my);
+  let x0 = -depart.w / 2, x1 = depart.w / 2, y0 = -depart.d / 2, y1 = depart.d / 2;
   const snap = (v) => Math.round(v * 2) / 2;
   const borne = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
-  if (cote === 'est') x1 = borne(snap(mx), x0 + TAILLE_MIN, x0 + TAILLE_MAX);
-  if (cote === 'ouest') x0 = borne(snap(mx), x1 - TAILLE_MAX, x1 - TAILLE_MIN);
-  if (cote === 'nord') y1 = borne(snap(my), y0 + TAILLE_MIN, y0 + TAILLE_MAX);
-  if (cote === 'sud') y0 = borne(snap(my), y1 - TAILLE_MAX, y1 - TAILLE_MIN);
-  const sx = x1 - x0, sy = y1 - y0;
-  pl.x = (x0 + x1) / 2; pl.y = (y0 + y1) / 2;
-  if (pl.rot % 180 === 0) { pl.w = sx; pl.d = sy; } else { pl.w = sy; pl.d = sx; }
+  if (cote === 'droite') x1 = x0 + borne(snap(lx - x0), TAILLE_MIN, TAILLE_MAX);
+  if (cote === 'gauche') x0 = x1 - borne(snap(x1 - lx), TAILLE_MIN, TAILLE_MAX);
+  if (cote === 'arriere') y1 = y0 + borne(snap(ly - y0), TAILLE_MIN, TAILLE_MAX);
+  if (cote === 'avant') y0 = y1 - borne(snap(y1 - ly), TAILLE_MIN, TAILLE_MAX);
+  const [cx, cy] = versMonde(depart, (x0 + x1) / 2, (y0 + y1) / 2);
+  pl.x = Math.round(cx * 100) / 100; pl.y = Math.round(cy * 100) / 100;
+  pl.w = x1 - x0; pl.d = y1 - y0;
+}
+
+/* Aligner sur le mur le plus proche : le dos du meuble contre le mur (droit ou diagonal), le devant vers la pièce. */
+function alignerMur(pl) {
+  const m = S.catById[pl.item], piece = pieceDe(pl.x, pl.y);
+  if (!piece) return alert('Placez d\'abord le meuble dans une pièce.');
+  const poly = S.plan.pieces.find((r) => r.id === piece).polygone;
+  let best = null;
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i], b = poly[(i + 1) % poly.length];
+    const L = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    if (L < 12) continue;                                   // ignorer les petits retours de mur
+    const dist = distSeg(pl.x, pl.y, a, b);
+    if (!best || dist < best.dist) best = { a, b, L, dist };
+  }
+  if (!best) return;
+  const { a, b, L } = best, ux = (b[0] - a[0]) / L, uy = (b[1] - a[1]) / L;
+  let nx = -uy, ny = ux;                                    // normale du mur
+  if (nx * (pl.x - a[0]) + ny * (pl.y - a[1]) < 0) { nx = -nx; ny = -ny; }   // vers l'intérieur (côté du meuble)
+  pl.rot = normAngle(Math.atan2(-nx, -ny) * 180 / Math.PI); // devant = normale vers la pièce
+  const [, d] = dims(pl, m);
+  const t = Math.max(0, Math.min(L, (pl.x - a[0]) * ux + (pl.y - a[1]) * uy));
+  pl.x = Math.round((a[0] + ux * t + nx * (d / 2 + 0.5)) * 100) / 100;
+  pl.y = Math.round((a[1] + uy * t + ny * (d / 2 + 0.5)) * 100) / 100;
+  marquerModifie(); toutRedessiner();
 }
 
 function dessinerResultats() {
@@ -384,24 +430,36 @@ function dessinerSelection() {
   if (!pl) { box.innerHTML = '<p class="aide">Aucun meuble sélectionné. Cliquez sur un meuble du plan.</p>'; return; }
   const m = S.catById[pl.item];
   const [x0, y0, x1, y1] = bornes(empreinte(pl, m));
-  const [sx, sy] = taille(pl, m);
+  const [w, d] = dims(pl, m);
   const piece = pieceDe(pl.x, pl.y);
   const nomPiece = piece ? S.plan.pieces.find((r) => r.id === piece).nom : 'hors des pièces';
-  const orient = { 0: 'sud', 90: 'ouest', 180: 'nord', 270: 'est' }[pl.rot];
+  const orient = cardinal(...directionDevant(pl));
   box.innerHTML = `
     <div><b>${esc(m.nom)}</b> <span class="badge">${NOMS_CATEGORIES[m.categorie] || m.categorie}</span>${m.essentiel ? ' <span class="badge ess">essentiel</span>' : ''}</div>
-    <div class="aide">${r1(sx)} × ${r1(sy)} po · ${nomPiece} · devant vers le ${orient}${m.note ? '<br>' + esc(m.note) : ''}</div>
-    <div class="aide">x ${r1(x0)}–${r1(x1)} · y ${r1(y0)}–${r1(y1)}</div>
+    <div class="aide">${r1(w)} × ${r1(d)} po · ${nomPiece} · devant vers le ${orient} (${r1(pl.rot || 0)}°)${m.note ? '<br>' + esc(m.note) : ''}</div>
+    <div class="aide">emprise x ${r1(x0)}–${r1(x1)} · y ${r1(y0)}–${r1(y1)}</div>
     <div class="champs">
-      <label>Centre x (po)<input id="s-x" type="number" step="0.5" value="${pl.x}"></label>
-      <label>Centre y (po)<input id="s-y" type="number" step="0.5" value="${pl.y}"></label>
-      ${m.redimensionnable ? `<label>Est-ouest (po)<input id="s-ex" type="number" step="0.5" min="${TAILLE_MIN}" max="${TAILLE_MAX}" value="${r1(sx)}"></label>
-      <label>Nord-sud (po)<input id="s-ns" type="number" step="0.5" min="${TAILLE_MIN}" max="${TAILLE_MAX}" value="${r1(sy)}"></label>` : ''}
+      <label>Centre x (po)<input id="s-x" type="number" step="0.5" value="${r1(pl.x)}"></label>
+      <label>Centre y (po)<input id="s-y" type="number" step="0.5" value="${r1(pl.y)}"></label>
+      ${m.redimensionnable ? `<label>Largeur, côté avant (po)<input id="s-w" type="number" step="0.5" min="${TAILLE_MIN}" max="${TAILLE_MAX}" value="${r1(w)}"></label>
+      <label>Profondeur (po)<input id="s-d" type="number" step="0.5" min="${TAILLE_MIN}" max="${TAILLE_MAX}" value="${r1(d)}"></label>` : ''}
     </div>
     ${m.redimensionnable ? `<p class="aide">Dimensions ajustables : tapez-les ci-dessus ou glissez les poignées blanches sur le plan (pas de 0,5 po, ${TAILLE_MIN} à ${TAILLE_MAX} po). Le centre reste en place quand vous tapez une valeur.</p>` : ''}
+    <h3>Rotation</h3>
+    <div class="rotation">
+      <button id="s-rot-90g" title="90° à gauche (Maj+R)">⟲ 90°</button>
+      <button id="s-rot-15g" title="15° à gauche ([)">⟲ 15°</button>
+      <button id="s-rot-1g" title="1° à gauche (Maj+[)">⟲ 1°</button>
+      <label class="angle">Angle (°)<input id="s-angle" type="number" step="1" min="0" max="359.99" value="${r1(pl.rot || 0)}"></label>
+      <button id="s-rot-1d" title="1° à droite (Maj+])">⟳ 1°</button>
+      <button id="s-rot-15d" title="15° à droite (])">⟳ 15°</button>
+      <button id="s-rot-90d" title="90° à droite (R)">⟳ 90°</button>
+    </div>
     <div class="boutons">
-      <button id="s-rotg" title="Tourner à gauche">⟲ 90°</button>
-      <button id="s-rotd" title="Tourner à droite (R)">⟳ 90°</button>
+      <button id="s-mur" title="Tourne le meuble pour que son dos soit contre le mur le plus proche (droit ou diagonal), puis l'y adosse">Aligner sur le mur le plus proche</button>
+    </div>
+    <p class="aide">0° : devant vers le sud · 90° : ouest · 180° : nord · 270° : est. Le trait blanc marque le devant.</p>
+    <div class="boutons">
       <button id="s-dup">Dupliquer</button>
       <button id="s-sup" class="danger">Enlever</button>
     </div>`;
@@ -409,18 +467,21 @@ function dessinerSelection() {
     pl.x = +$('s-x').value; pl.y = +$('s-y').value;
     if (m.redimensionnable) {
       const borne = (v) => Math.min(TAILLE_MAX, Math.max(TAILLE_MIN, Math.round((+v || TAILLE_MIN) * 2) / 2));
-      const ex = borne($('s-ex').value), ns = borne($('s-ns').value);
-      if (pl.rot % 180 === 0) { pl.w = ex; pl.d = ns; } else { pl.w = ns; pl.d = ex; }
+      pl.w = borne($('s-w').value); pl.d = borne($('s-d').value);
     }
     marquerModifie(); toutRedessiner();
   };
-  for (const id of ['s-x', 's-y', 's-ex', 's-ns']) if ($(id)) $(id).onchange = maj;
-  $('s-rotg').onclick = () => tourner(pl, -90);
-  $('s-rotd').onclick = () => tourner(pl, 90);
+  for (const id of ['s-x', 's-y', 's-w', 's-d']) if ($(id)) $(id).onchange = maj;
+  for (const [id, a] of [['s-rot-90g', -90], ['s-rot-15g', -15], ['s-rot-1g', -1], ['s-rot-1d', 1], ['s-rot-15d', 15], ['s-rot-90d', 90]]) {
+    $(id).onclick = () => tourner(pl, a);
+  }
+  $('s-angle').onchange = () => { pl.rot = normAngle(+$('s-angle').value || 0); marquerModifie(); toutRedessiner(); };
+  $('s-mur').onclick = () => alignerMur(pl);
   $('s-sup').onclick = () => enlever(pl.uid);
   $('s-dup').onclick = () => ajouter(pl.item, pl.x + 6, pl.y - 6, pl);
 }
-function tourner(pl, a) { pl.rot = (pl.rot + a + 360) % 360; marquerModifie(); toutRedessiner(); }
+/* Rotation autour du centre du meuble (sens horaire positif). */
+function tourner(pl, a) { pl.rot = normAngle((pl.rot || 0) + a); marquerModifie(); toutRedessiner(); }
 function enlever(id) { S.placements = S.placements.filter((p) => p.uid !== id); S.sel = null; marquerModifie(); toutRedessiner(); }
 
 document.addEventListener('keydown', (ev) => {
@@ -435,6 +496,8 @@ document.addEventListener('keydown', (ev) => {
   const pas = ev.shiftKey ? 6 : 1;
   const k = ev.key;
   if (k === 'r' || k === 'R') tourner(pl, ev.shiftKey ? -90 : 90);
+  else if (k === ']' || k === '}') tourner(pl, ev.shiftKey ? 1 : 15);
+  else if (k === '[' || k === '{') tourner(pl, ev.shiftKey ? -1 : -15);
   else if (k === 'Delete' || k === 'Backspace') enlever(pl.uid);
   else if (k === 'Escape') selectionner(null);
   else if (k.startsWith('Arrow')) {

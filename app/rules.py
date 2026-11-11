@@ -46,7 +46,6 @@ PLINTHES = [{'nom': 'plinthe chambre SO (mur sud)', 'p1': [59.8, 0], 'p2': [107.
 # Point d'entrée de chaque pièce (départ des passages de 36 po).
 ENTREES = {'BR_SW': (115, 116.75), 'BR_NE': (262, 205), 'LIVING': (215, 135), 'BATH': (204, 275), 'ENTRY': (175, 245)}
 
-FRONT = {0: (0, -1), 90: (-1, 0), 180: (0, 1), 270: (1, 0)}   # le devant d'un meuble à rot 0 regarde le sud
 
 
 # ---------------------------------------------------------------- géométrie de base
@@ -86,47 +85,105 @@ def piece_de(x, y):
 
 
 # ---------------------------------------------------------------- meubles placés
-def taille(pl, m):
-    w = float(pl.get('w') or m['w']) if m.get('redimensionnable') else m['w']
-    d = float(pl.get('d') or m['d']) if m.get('redimensionnable') else m['d']
-    rot = int(pl.get('rot', 0)) % 360
-    return (w, d) if rot in (0, 180) else (d, w)
+# Repère local d'un meuble : origine au centre, x vers sa droite, y vers l'arrière ; le DEVANT est du côté -y.
+# rot = angle en degrés, sens horaire sur le plan (0 : devant au sud, 90 : ouest, 180 : nord, 270 : est).
+def angle(pl):
+    return float(pl.get('rot', 0) or 0) % 360
 
 
-def empreinte(pl, m):
-    sx, sy = taille(pl, m)
-    cx, cy = float(pl['x']), float(pl['y'])
-    x0, y0, x1, y1 = cx - sx / 2, cy - sy / 2, cx + sx / 2, cy + sy / 2
+def _cs(rot):
+    t = math.radians(rot)
+    c, s = math.cos(t), math.sin(t)
+    return (0.0 if abs(c) < 1e-12 else c), (0.0 if abs(s) < 1e-12 else s)
+
+
+def vers_monde(pl, lx, ly):
+    c, s = _cs(angle(pl))
+    return [round(float(pl['x']) + lx * c + ly * s, 6), round(float(pl['y']) - lx * s + ly * c, 6)]
+
+
+def direction_monde(pl, lx, ly):
+    c, s = _cs(angle(pl))
+    return (lx * c + ly * s, -lx * s + ly * c)
+
+
+def dims(pl, m):
+    """Largeur (côté avant) et profondeur du meuble, dans son propre repère."""
+    w = float(pl.get('w') or m['w']) if m.get('redimensionnable') else float(m['w'])
+    d = float(pl.get('d') or m['d']) if m.get('redimensionnable') else float(m['d'])
+    return w, d
+
+
+def contour_local(m, w, d):
+    x0, y0, x1, y1 = -w / 2, -d / 2, w / 2, d / 2
     if m.get('forme') == 'octogone':
-        c = min(sx, sy) * 0.293
+        c = min(w, d) * 0.293
         return [[x0 + c, y0], [x1 - c, y0], [x1, y0 + c], [x1, y1 - c], [x1 - c, y1], [x0 + c, y1], [x0, y1 - c], [x0, y0 + c]]
     return R(x0, y0, x1, y1)
 
 
+def empreinte(pl, m):
+    w, d = dims(pl, m)
+    return [vers_monde(pl, *p) for p in contour_local(m, w, d)]
+
+
+def echantillons_meuble(pl, m, n=12):
+    """Grille de points sur toute la surface du meuble (calculée dans son repère, donc valable à tout angle)."""
+    w, d = dims(pl, m)
+    loc = contour_local(m, w, d)
+    pts = [(-w / 2 + .05 + (w - .1) * i / n, -d / 2 + .05 + (d - .1) * j / n) for i in range(n + 1) for j in range(n + 1)]
+    if m.get('forme') == 'octogone':
+        pts = [p for p in pts if point_dans(*p, loc)]
+    return [tuple(vers_monde(pl, *p)) for p in pts]
+
+
 def zone_inclinaison(pl, m):
     """Recliner : 64 po incliné. Zone réservée devant le meuble (répartition dossier/repose-pieds inconnue)."""
-    ext = float(m.get('inclinaison', 0)) - m['d']
+    w, d = dims(pl, m)
+    ext = float(m.get('inclinaison', 0)) - d
     if ext <= 0:
         return None
-    (x0, y0), _, (x1, y1), _ = empreinte(pl, m)
-    fx, fy = FRONT[int(pl.get('rot', 0)) % 360]
-    if fx < 0: x0 -= ext
-    if fx > 0: x1 += ext
-    if fy < 0: y0 -= ext
-    if fy > 0: y1 += ext
-    return R(x0, y0, x1, y1)
+    return [vers_monde(pl, *p) for p in R(-w / 2, -d / 2 - ext, w / 2, d / 2)]
+
+
+NOMS_DIRECTIONS = ['est', 'nord-est', 'nord', 'nord-ouest', 'ouest', 'sud-ouest', 'sud', 'sud-est']
+
+
+def cardinal(vx, vy):
+    return NOMS_DIRECTIONS[int(round(math.degrees(math.atan2(vy, vx)) / 45)) % 8]
+
+
+# côtés du meuble dans son repère : normale sortante, axe le long du côté, demi-longueur selon w ou d
+COTES_LOCAUX = {'avant': ((0, -1), (1, 0), 'w'), 'arriere': ((0, 1), (1, 0), 'w'),
+                'gauche': ((-1, 0), (0, 1), 'd'), 'droite': ((1, 0), (0, 1), 'd')}
+
+
+def point_cote(pl, m, cote, t, off):
+    """Point à la position t le long du côté (−L/2..L/2) et à la distance off à l'extérieur du meuble."""
+    w, d = dims(pl, m)
+    (nx, ny), (ax, ay), _ = COTES_LOCAUX[cote]
+    demi = d / 2 if nx == 0 else w / 2
+    return vers_monde(pl, nx * (demi + off) + ax * t, ny * (demi + off) + ay * t)
+
+
+def longueur_cote(pl, m, cote):
+    w, d = dims(pl, m)
+    return w if COTES_LOCAUX[cote][2] == 'w' else d
+
+
+def nom_cote(pl, cote):
+    return cardinal(*direction_monde(pl, *COTES_LOCAUX[cote][0]))
 
 
 def resoudre(placements, cat=None):
-    """Retourne la liste des meubles placés avec leur polygone, leur pièce et leur fiche catalogue."""
+    """Retourne la liste des meubles placés avec leur polygone, leurs points d'échantillonnage, leur pièce et leur fiche."""
     cat = cat or CAT
     out = []
     for pl in placements:
         m = cat.get(pl.get('item'))
         if not m:
             continue
-        poly = empreinte(pl, m)
-        out.append({'uid': pl.get('uid'), 'm': m, 'pl': pl, 'poly': poly,
+        out.append({'uid': pl.get('uid'), 'm': m, 'pl': pl, 'poly': empreinte(pl, m), 'pts': echantillons_meuble(pl, m),
                     'piece': piece_de(float(pl['x']), float(pl['y'])), 'zone': zone_inclinaison(pl, m)})
     return out
 
@@ -142,7 +199,7 @@ def problemes(meubles, params):
     out = []
     sol = [e for e in meubles if e['m']['type'] == 'sol']
     for e in sol:
-        pts = echantillons(e['poly'])
+        pts = e['pts']
         nom = e['m']['nom']
         if e['piece'] is None:
             out.append({'uid': e['uid'], 'type': 'hors_piece', 'message': f"{nom} : hors des pièces"})
@@ -156,14 +213,13 @@ def problemes(meubles, params):
             if porte['piece'] == e['piece'] and any(dans_secteur(p, porte) for p in pts):
                 out.append({'uid': e['uid'], 'type': 'porte', 'message': f"{nom} : dans le débattement de la porte"})
         for pl in PLINTHES:
-            d = min(dist_seg(x, y, pl['p1'], pl['p2']) for x, y in echantillons(e['poly'], 16))
+            d = min(dist_seg(x, y, pl['p1'], pl['p2']) for x, y in echantillons_meuble(e['pl'], e['m'], 16))
             if d < params['plinthe']:
                 out.append({'uid': e['uid'], 'type': 'plinthe', 'message': f"{nom} : à {d:.1f} po de la {pl['nom']}"})
     for i in range(len(sol)):
         for j in range(i + 1, len(sol)):
             a, b = sol[i], sol[j]
-            if any(point_dans(*p, b['poly']) for p in echantillons(a['poly'])) or \
-               any(point_dans(*p, a['poly']) for p in echantillons(b['poly'])):
+            if any(point_dans(*p, b['poly']) for p in a['pts']) or any(point_dans(*p, a['poly']) for p in b['pts']):
                 out.append({'uid': a['uid'], 'uid2': b['uid'], 'type': 'chevauchement',
                             'message': f"{a['m']['nom']} chevauche {b['m']['nom']}"})
     return out
@@ -239,32 +295,26 @@ def _atteint(gx, gy, vu, p, tol=8):
     return bool((vu & (np.hypot(X - p[0], Y - p[1]) <= tol)).any())
 
 
-def approches(poly, pas=6):
-    """Points d'approche le long de chaque côté (tous les 6 po), à 19 po du meuble (moitié d'un passage de 36 po + 1)."""
-    xs = [p[0] for p in poly]; ys = [p[1] for p in poly]
-    x0, x1, y0, y1 = min(xs), max(xs), min(ys), max(ys)
-    lx = list(np.linspace(x0, x1, max(2, int((x1 - x0) // pas) + 1)))
-    ly = list(np.linspace(y0, y1, max(2, int((y1 - y0) // pas) + 1)))
-    return {'nord': [(x, y1 + 19) for x in lx], 'sud': [(x, y0 - 19) for x in lx],
-            'ouest': [(x0 - 19, y) for y in ly], 'est': [(x1 + 19, y) for y in ly]}
+def approches(pl, m, pas=6):
+    """Points d'approche le long de chaque côté du meuble (tous les 6 po), à 19 po de lui
+    (moitié d'un passage de 36 po + 1). Les côtés sont nommés selon leur direction sur le plan."""
+    out = {}
+    for cote in COTES_LOCAUX:
+        L = longueur_cote(pl, m, cote)
+        ts = np.linspace(-L / 2, L / 2, max(2, int(L // pas) + 1))
+        out[nom_cote(pl, cote)] = [tuple(point_cote(pl, m, cote, float(t), 19)) for t in ts]
+    return out
 
 
-def largeur_cote(poly, cote, libre_fn, fenetre=30, maxi=72):
-    """Dégagement d'un côté du lit : profil pouce par pouce le long du côté.
+def largeur_cote(pl, m, cote, libre_fn, fenetre=30, maxi=72):
+    """Dégagement d'un côté du lit (repère du meuble, donc valable à tout angle) : profil pouce par pouce le long du côté.
     Retourne (meilleure largeur sur une fenêtre de 30 po = zone de transfert, largeur minimale sur toute la longueur)."""
-    xs = [p[0] for p in poly]; ys = [p[1] for p in poly]
-    x0, x1, y0, y1 = min(xs), max(xs), min(ys), max(ys)
-    if cote in ('nord', 'sud'):
-        positions = np.arange(x0 + .5, x1, 1.0)
-    else:
-        positions = np.arange(y0 + .5, y1, 1.0)
+    L = longueur_cote(pl, m, cote)
     profil = []
-    for s in positions:
+    for t in np.arange(-L / 2 + .5, L / 2, 1.0):
         w = 0
         for off in range(1, maxi + 1):
-            o = off - .5
-            p = {'nord': (s, y1 + o), 'sud': (s, y0 - o), 'est': (x1 + o, s), 'ouest': (x0 - o, s)}[cote]
-            if libre_fn(*p):
+            if libre_fn(*point_cote(pl, m, cote, float(t), off - .5)):
                 w = off
             else:
                 break
@@ -298,15 +348,15 @@ def verifier(placements, params=None, cat=None):
         vu = accessibles(gx, gy, D, ENTREES[piece], r)
         for e in ici:
             if e['m'].get('acces'):
-                ap = approches(e['poly'])
+                ap = approches(e['pl'], e['m'])
                 cotes = [c for c, pts in ap.items() if any(_atteint(gx, gy, vu, p, tol=4) for p in pts)]
                 res['acces'].append({'uid': e['uid'], 'nom': e['m']['nom'], 'piece': piece, 'accessible': bool(cotes), 'cotes': cotes})
             if e['m'].get('lit'):
                 def libre(x, y, piece=piece, obstacles=obstacles):
                     return point_dans(x, y, PIECES[piece]) and not any(point_dans(x, y, o) for o in obstacles)
-                rot = int(e['pl'].get('rot', 0)) % 360
-                longs = ('nord', 'sud') if rot in (0, 180) else ('est', 'ouest')
-                mesures = {c: largeur_cote(e['poly'], c, libre) for c in longs}
+                w, d = dims(e['pl'], e['m'])
+                longs = ('avant', 'arriere') if w >= d else ('gauche', 'droite')
+                mesures = {nom_cote(e['pl'], c): largeur_cote(e['pl'], e['m'], c, libre) for c in longs}
                 largeurs = {c: v[0] for c, v in mesures.items()}
                 transfert = max(largeurs, key=largeurs.get)
                 res['lit'].append({'uid': e['uid'], 'cotes': largeurs, 'minimums': {c: v[1] for c, v in mesures.items()},

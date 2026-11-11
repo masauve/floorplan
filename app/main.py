@@ -28,16 +28,15 @@ class Placement(BaseModel):
     item: str = Field(max_length=64)
     x: float = Field(ge=-100, le=500)
     y: float = Field(ge=-100, le=500)
-    rot: int = 0
+    rot: float = Field(default=0, ge=-3600, le=3600, description='angle en degrés, sens horaire (0 : devant vers le sud)')
     w: Optional[float] = Field(default=None, gt=0, le=200)
     d: Optional[float] = Field(default=None, gt=0, le=200)
 
     @field_validator('rot')
     @classmethod
     def rot_valide(cls, v):
-        if v % 90 != 0:
-            raise ValueError('rotation par pas de 90°')
-        return v % 360
+        v = round(v % 360, 2)
+        return 0.0 if v >= 360 else v
 
 class NouveauMeuble(BaseModel):
     nom: str = Field(min_length=1, max_length=60)
