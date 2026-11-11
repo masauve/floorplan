@@ -647,32 +647,6 @@
    "source": "vector"
   },
   {
-   "id": "C3",
-   "room": "BR_NE (door alcove)",
-   "polygon": [
-    [
-     217.0,
-     219.9
-    ],
-    [
-     229.3,
-     207.7
-    ],
-    [
-     247.7,
-     226.1
-    ],
-    [
-     235.4,
-     238.3
-    ]
-   ],
-   "width": 26,
-   "depth": 17,
-   "door": "bifold, faces south-east",
-   "source": "extrapolated"
-  },
-  {
    "id": "C4",
    "room": "ENTRY",
    "location": "between the triangular wall (x 134-157, y 197-240) and closet C5",
@@ -1207,7 +1181,8 @@
   "Symbol above the bathroom north wall (x ~193-228) looks like a window but the inner wall is continuous: probably not a window into the unit.",
   "Space at the NE corner (x 330.8-386.7, y 323.7-352) with a bifold symbol is outside the unit.",
   "Baseboard heaters under every window (occupant info): keep the window zones on the south wall (x 59.8-107.9, x 277.4-325.4) and east wall (y 187.3-235.3) free of furniture and bedding.",
-  "Bathroom: tub only (no walk-in shower); largest free circle is computed in rooms[BATH].turning_circle_max."
+  "Bathroom: tub only (no walk-in shower); largest free circle is computed in rooms[BATH].turning_circle_max.",
+  "Closet C3 (rectangle drawn on the diagonal wall next to the NE bedroom door) removed on 2026-11-11: the occupants confirmed it is not a closet or a piece of furniture."
  ],
  "walls_raw": [
   {

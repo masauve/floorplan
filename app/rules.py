@@ -25,13 +25,12 @@ def R(x0, y0, x1, y1):
 PIECES = {r['id']: r['polygon'] for r in PLAN['rooms'] if r['id'] != 'BALCONY'}
 NOMS = {'BR_SW': 'Chambre (SO)', 'BR_NE': 'Chambre (NE) / bureau', 'LIVING': 'Séjour et cuisine',
         'BATH': 'Salle de bain', 'ENTRY': "Vestibule d'entrée", 'PASSAGE': 'Passage'}
-C3 = [c for c in PLAN['closets'] if c['id'] == 'C3'][0]['polygon']
 
 # Éléments fixes : aucun meuble ne doit les chevaucher.
 FIXES = {
     'BR_SW': [('pilier SO', R(0, 0, 4.4, 9.7)), ('pilier SE', R(121.7, 0, 127.2, 9.7)),
               ('portes du placard C1', R(0, 105, 48, 113))],
-    'BR_NE': [('placard C3', C3), ('portes du placard C2', R(276.8, 309.8, 324.9, 317.8))],
+    'BR_NE': [('portes du placard C2', R(276.8, 309.8, 324.9, 317.8))],
     'LIVING': [('pilier SO', R(131.9, 0, 136.5, 9.7)), ('pilier SE', R(356.8, 0, 366.4, 9.7)),
                ('colonne est', R(356.8, 102.9, 378.4, 117.7)), ('comptoir nord', R(254, 149.7, 346, 175.2)),
                ('évier / comptoir est', R(346, 144.3, 378.4, 175.2)), ('réfrigérateur', R(353, 117.7, 378.4, 144.3))],

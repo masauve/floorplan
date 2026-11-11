@@ -18,7 +18,7 @@ def test_v3_cercles():
     res = rules.verifier(V3)
     cercles = {p['piece']: p['cercle'] for p in res['pieces']}
     assert cercles['BR_SW'] == 38.0
-    assert cercles['BR_NE'] == 61.6
+    assert cercles['BR_NE'] == 62.0   # 61.6 avant le retrait du placard C3 (pas un vrai meuble, confirmé le 2026-11-11)
     assert cercles['LIVING'] == 68.0
     assert cercles['BATH'] == 51.1
 
