@@ -2,7 +2,6 @@
 /* Éditeur d'aménagement – repère en pouces, y vers le nord (inversé à l'affichage). */
 
 const NS = 'http://www.w3.org/2000/svg';
-const COULEURS = { existant: '#4a7fd4', nouveau: '#f0a030', sur_mesure: '#9b6cd1', perso: '#2a9d8f' };
 const NOMS_CATEGORIES = { existant: 'existant', nouveau: 'à acheter', sur_mesure: 'sur mesure', perso: 'créé' };
 
 const VUE_INITIALE = { x: -15, y: -362, w: 412, h: 432 };
@@ -15,6 +14,51 @@ const S = {
   onglet: null,                      // null = plan complet, sinon id de la pièce affichée
 };
 const ID_ONGLET = Math.random().toString(36).slice(2, 10);   // identifie cette fenêtre pour la synchronisation
+
+/* ------------------------------------------------------------------ thèmes (skins)
+   Couleurs du plan SVG ; les couleurs de l'interface sont dans style.css (:root[data-theme=…]). */
+const THEMES = {
+  classique: { nom: 'Classique', balcon: '#eef3f6', balconTrait: '#9fb0bd', piece: '#eaf6f6', mur: '#6b7280', equip: '#ffffff', equipTrait: '#7a8796',
+    placard: '#f2efe6', placardTrait: '#a39b82', fenetre: '#5aa9e6', ouverture: '#ffffff', plinthe: '#e03030', porte: '#9aa3ad', porteTrait: '#6b7280',
+    vert: '#2a7a3b', etiquette: '#445566', masque: '#f2f4f7', masqueOpacite: 0.9, contour: '#23405f',
+    meubles: { existant: '#4a7fd4', nouveau: '#f0a030', sur_mesure: '#9b6cd1', perso: '#2a9d8f' }, mince: '#111111', trait: '#1f2937',
+    probleme: '#e03030', info: '#f08a00', selection: '#0b5ed7', devant: '#ffffff', texteMeuble: '#111111', poignee: '#ffffff', zone: '#4a7fd4',
+    cercleOk: '#2fb35a', cercleKo: '#e03030', epais: 1 },
+  sombre: { nom: 'Sombre', balcon: '#1c252e', balconTrait: '#4b5b6b', piece: '#1f2b33', mur: '#9aa5b4', equip: '#2b3542', equipTrait: '#7d8a9a',
+    placard: '#2e2a22', placardTrait: '#8f8466', fenetre: '#5aa9e6', ouverture: '#1f2b33', plinthe: '#ff6b6b', porte: '#9aa3ad', porteTrait: '#9aa5b4',
+    vert: '#7ad694', etiquette: '#c9d1dc', masque: '#161b22', masqueOpacite: 0.88, contour: '#8ab4f8',
+    meubles: { existant: '#5b8fe0', nouveau: '#e0a040', sur_mesure: '#a984de', perso: '#3bb3a4' }, mince: '#e6e9ef', trait: '#0d1117',
+    probleme: '#ff6b6b', info: '#f2b04a', selection: '#8ab4f8', devant: '#ffffff', texteMeuble: '#0d1117', poignee: '#1e2530', zone: '#8ab4f8',
+    cercleOk: '#7ad694', cercleKo: '#ff6b6b', epais: 1 },
+  contraste: { nom: 'Contraste élevé', balcon: '#ffffff', balconTrait: '#000000', piece: '#ffffff', mur: '#000000', equip: '#ffffff', equipTrait: '#000000',
+    placard: '#ffffff', placardTrait: '#000000', fenetre: '#0060ff', ouverture: '#ffffff', plinthe: '#d00000', porte: '#000000', porteTrait: '#000000',
+    vert: '#005a00', etiquette: '#000000', masque: '#ffffff', masqueOpacite: 0.93, contour: '#000000',
+    meubles: { existant: '#1f5fd6', nouveau: '#ff9a00', sur_mesure: '#8a2be2', perso: '#008a7a' }, mince: '#000000', trait: '#000000',
+    probleme: '#d00000', info: '#b35c00', selection: '#0000c8', devant: '#ffff00', texteMeuble: '#000000', poignee: '#ffff00', zone: '#0000c8',
+    cercleOk: '#005a00', cercleKo: '#d00000', epais: 1.8 },
+  nature: { nom: 'Nature', balcon: '#eef0e2', balconTrait: '#a9ad92', piece: '#f3f1e2', mur: '#5a5f4a', equip: '#fffdf5', equipTrait: '#8c8f78',
+    placard: '#ece3cc', placardTrait: '#a89a72', fenetre: '#6aa9c9', ouverture: '#f3f1e2', plinthe: '#c0392b', porte: '#9a9f86', porteTrait: '#5a5f4a',
+    vert: '#2f6b2a', etiquette: '#4a5a3e', masque: '#fbfaf5', masqueOpacite: 0.9, contour: '#3f5a32',
+    meubles: { existant: '#8a6b48', nouveau: '#d7a13f', sur_mesure: '#6f8f5a', perso: '#3f8f86' }, mince: '#23301f', trait: '#3a3f2e',
+    probleme: '#c0392b', info: '#d7a13f', selection: '#3f5a32', devant: '#ffffff', texteMeuble: '#1d2416', poignee: '#fffdf7', zone: '#5f8a3d',
+    cercleOk: '#2f6b2a', cercleKo: '#c0392b', epais: 1 },
+  sable: { nom: 'Sable', balcon: '#f6efe6', balconTrait: '#cdb69c', piece: '#fbf1e4', mur: '#7a6555', equip: '#fffdf8', equipTrait: '#a48d78',
+    placard: '#f2e3cf', placardTrait: '#b89b78', fenetre: '#6fa8c8', ouverture: '#fbf1e4', plinthe: '#c62828', porte: '#b8a596', porteTrait: '#7a6555',
+    vert: '#4d6b2a', etiquette: '#6b4f3d', masque: '#fffaf3', masqueOpacite: 0.9, contour: '#8c4a2f',
+    meubles: { existant: '#c0643c', nouveau: '#e3a73c', sur_mesure: '#8e6bb0', perso: '#3d8f8a' }, mince: '#3a2a20', trait: '#4a3426',
+    probleme: '#c62828', info: '#e3a73c', selection: '#8c4a2f', devant: '#ffffff', texteMeuble: '#2a1c14', poignee: '#fffdf8', zone: '#c0643c',
+    cercleOk: '#4d6b2a', cercleKo: '#c62828', epais: 1 },
+};
+const CLE_THEME = 'amenagement-theme';
+let T = THEMES.classique;
+function appliquerTheme(nom, memoriser = true) {
+  if (!THEMES[nom]) nom = 'classique';
+  T = THEMES[nom];
+  document.documentElement.dataset.theme = nom;
+  if ($('theme')) $('theme').value = nom;
+  if (memoriser) { try { localStorage.setItem(CLE_THEME, nom); } catch (e) { /* navigation privée */ } }
+  if (S.plan && gPlan) { dessinerPlan(); dessinerMasque(); toutRedessiner(); }
+}
 
 /* ------------------------------------------------------------------ utilitaires */
 const $ = (id) => document.getElementById(id);
@@ -172,46 +216,46 @@ function dessinerPlan() {
   const svg = $('plan');
   svg.innerHTML = '';
   gPlan = el('g', {}, svg);
-  el('polygon', { points: pts(S.plan.balcon), fill: '#eef3f6', stroke: '#9fb0bd', 'stroke-width': 0.6 }, gPlan);
-  for (const p of S.plan.pieces) el('polygon', { points: pts(p.polygone), fill: '#eaf6f6', stroke: 'none' }, gPlan);
+  el('polygon', { points: pts(S.plan.balcon), fill: T.balcon, stroke: T.balconTrait, 'stroke-width': 0.6 }, gPlan);
+  for (const p of S.plan.pieces) el('polygon', { points: pts(p.polygone), fill: T.piece, stroke: 'none' }, gPlan);
   for (const w of S.plan.murs) {
-    if (w.type === 'rect') el('rect', { x: w.x[0], y: -w.y[1], width: w.x[1] - w.x[0], height: w.y[1] - w.y[0], fill: '#6b7280' }, gPlan);
-    else el('polygon', { points: pts(w.pts), fill: '#6b7280' }, gPlan);
+    if (w.type === 'rect') el('rect', { x: w.x[0], y: -w.y[1], width: w.x[1] - w.x[0], height: w.y[1] - w.y[0], fill: T.mur }, gPlan);
+    else el('polygon', { points: pts(w.pts), fill: T.mur }, gPlan);
   }
   for (const f of S.plan.equipements) {
-    el('polygon', { points: pts(f.polygon), fill: '#ffffff', stroke: '#7a8796', 'stroke-width': 0.5 }, gPlan);
+    el('polygon', { points: pts(f.polygon), fill: T.equip, stroke: T.equipTrait, 'stroke-width': 0.5 * T.epais }, gPlan);
   }
   for (const c of S.plan.placards) {
     const poly = c.polygon || (c.x ? [[c.x[0], c.y[0]], [c.x[1], c.y[0]], [c.x[1], c.y[1]], [c.x[0], c.y[1]]] : null);
-    if (poly) el('polygon', { points: pts(poly), fill: '#f2efe6', stroke: '#a39b82', 'stroke-width': 0.5, 'stroke-dasharray': '2,1' }, gPlan);
+    if (poly) el('polygon', { points: pts(poly), fill: T.placard, stroke: T.placardTrait, 'stroke-width': 0.5 * T.epais, 'stroke-dasharray': '2,1' }, gPlan);
   }
   for (const room of Object.values(S.plan.fixes)) {
-    for (const f of room) if (f.nom.startsWith('portes du placard')) el('polygon', { points: pts(f.polygone), fill: 'none', stroke: '#a39b82', 'stroke-width': 0.4, 'stroke-dasharray': '1,1' }, gPlan);
+    for (const f of room) if (f.nom.startsWith('portes du placard')) el('polygon', { points: pts(f.polygone), fill: 'none', stroke: T.placardTrait, 'stroke-width': 0.4 * T.epais, 'stroke-dasharray': '1,1' }, gPlan);
   }
   for (const o of S.plan.ouvertures) {
     if (o.type === 'window') {
       const a = o.wall === 'east' ? [378.4, o.y[0]] : [o.x[0], 0], b = o.wall === 'east' ? [378.4, o.y[1]] : [o.x[1], 0];
-      el('line', { x1: a[0], y1: -a[1], x2: b[0], y2: -b[1], stroke: '#5aa9e6', 'stroke-width': 3 }, gPlan);
+      el('line', { x1: a[0], y1: -a[1], x2: b[0], y2: -b[1], stroke: T.fenetre, 'stroke-width': 3 }, gPlan);
     } else if (o.jambs) {
       const [a, b] = o.jambs;
-      el('line', { x1: a[0], y1: -a[1], x2: b[0], y2: -b[1], stroke: '#ffffff', 'stroke-width': 2.4 }, gPlan);
+      el('line', { x1: a[0], y1: -a[1], x2: b[0], y2: -b[1], stroke: T.ouverture, 'stroke-width': 2.4 }, gPlan);
     } else if (o.x) {
-      el('line', { x1: o.x[0], y1: 0, x2: o.x[1], y2: 0, stroke: '#ffffff', 'stroke-width': 3 }, gPlan);
+      el('line', { x1: o.x[0], y1: 0, x2: o.x[1], y2: 0, stroke: T.ouverture, 'stroke-width': 3 }, gPlan);
     }
   }
-  for (const pl of S.plan.plinthes) el('line', { x1: pl.p1[0], y1: -pl.p1[1], x2: pl.p2[0], y2: -pl.p2[1], stroke: '#e03030', 'stroke-width': 1.6 }, gPlan);
+  for (const pl of S.plan.plinthes) el('line', { x1: pl.p1[0], y1: -pl.p1[1], x2: pl.p2[0], y2: -pl.p2[1], stroke: T.plinthe, 'stroke-width': 1.6 }, gPlan);
   for (const p of S.plan.portes) {
     const [hx, hy] = p.charniere, r = p.rayon, a0 = p.a0 * Math.PI / 180, a1 = p.a1 * Math.PI / 180;
     const x0 = hx + r * Math.cos(a0), y0 = hy + r * Math.sin(a0), x1 = hx + r * Math.cos(a1), y1 = hy + r * Math.sin(a1);
-    el('path', { d: `M${hx},${-hy} L${x0},${-y0} A${r},${r} 0 0 0 ${x1},${-y1} Z`, fill: '#9aa3ad', 'fill-opacity': 0.2, stroke: '#6b7280', 'stroke-width': 0.4, 'stroke-dasharray': '1.5,1' }, gPlan);
+    el('path', { d: `M${hx},${-hy} L${x0},${-y0} A${r},${r} 0 0 0 ${x1},${-y1} Z`, fill: T.porte, 'fill-opacity': 0.2, stroke: T.porteTrait, 'stroke-width': 0.4 * T.epais, 'stroke-dasharray': '1.5,1' }, gPlan);
   }
-  el('text', { x: 127.5, y: -137, 'font-size': 3.2, fill: '#2a7a3b' }, gPlan).textContent = 'porte enlevée';
+  el('text', { x: 127.5, y: -137, 'font-size': 3.2, fill: T.vert }, gPlan).textContent = 'porte enlevée';
   const etiquettes = { BR_SW: [24, 100], BR_NE: [320, 312], LIVING: [190, 165], BATH: [226, 300], ENTRY: [170, 270], PASSAGE: [215, 185] };
   for (const p of S.plan.pieces) {
     const [x, y] = etiquettes[p.id] || [0, 0];
-    el('text', { x, y: -y, 'font-size': 4.2, 'font-weight': 600, fill: '#456', 'text-anchor': 'middle' }, gPlan).textContent = p.nom;
+    el('text', { x, y: -y, 'font-size': 4.2, 'font-weight': 600, fill: T.etiquette, 'text-anchor': 'middle' }, gPlan).textContent = p.nom;
   }
-  el('text', { x: 192, y: 40, 'font-size': 4, fill: '#456', 'text-anchor': 'middle' }, gPlan).textContent = 'Balcon';
+  el('text', { x: 192, y: 40, 'font-size': 4, fill: T.etiquette, 'text-anchor': 'middle' }, gPlan).textContent = 'Balcon';
   gMasque = el('g', {}, svg);
   gCalques = el('g', {}, svg);
   gMeubles = el('g', {}, svg);
@@ -236,17 +280,17 @@ function dessinerMasque() {
   const p = pieceOnglet();
   if (!p) return;
   const trou = p.polygone.map(([x, y], i) => `${i ? 'L' : 'M'}${x},${-y}`).join(' ') + ' Z';
-  el('path', { d: `M-200,-500 H600 V200 H-200 Z ${trou}`, 'fill-rule': 'evenodd', fill: '#f2f4f7', 'fill-opacity': 0.9 }, gMasque);
+  el('path', { d: `M-200,-500 H600 V200 H-200 Z ${trou}`, 'fill-rule': 'evenodd', fill: T.masque, 'fill-opacity': T.masqueOpacite }, gMasque);
   const [x0, y0, x1, y1] = bornes(p.polygone), m = 14;
   const defs = el('defs', {}, gMasque), clip = el('clipPath', { id: 'clip-piece' }, defs);
   el('rect', { x: x0 - m, y: -(y1 + m), width: x1 - x0 + 2 * m, height: y1 - y0 + 2 * m }, clip);
   const murs = el('g', { 'clip-path': 'url(#clip-piece)' }, gMasque);
   for (const w of S.plan.murs) {
-    if (w.type === 'rect') el('rect', { x: w.x[0], y: -w.y[1], width: w.x[1] - w.x[0], height: w.y[1] - w.y[0], fill: '#6b7280' }, murs);
-    else el('polygon', { points: pts(w.pts), fill: '#6b7280' }, murs);
+    if (w.type === 'rect') el('rect', { x: w.x[0], y: -w.y[1], width: w.x[1] - w.x[0], height: w.y[1] - w.y[0], fill: T.mur }, murs);
+    else el('polygon', { points: pts(w.pts), fill: T.mur }, murs);
   }
-  for (const pl of S.plan.plinthes) el('line', { x1: pl.p1[0], y1: -pl.p1[1], x2: pl.p2[0], y2: -pl.p2[1], stroke: '#e03030', 'stroke-width': 1.6 }, murs);
-  el('polygon', { points: pts(p.polygone), fill: 'none', stroke: '#23405f', 'stroke-width': 0.8 }, gMasque);
+  for (const pl of S.plan.plinthes) el('line', { x1: pl.p1[0], y1: -pl.p1[1], x2: pl.p2[0], y2: -pl.p2[1], stroke: T.plinthe, 'stroke-width': 1.6 }, murs);
+  el('polygon', { points: pts(p.polygone), fill: 'none', stroke: T.contour, 'stroke-width': 0.8 * T.epais }, gMasque);
 }
 function dessinerOnglets() {
   const nav = $('onglets');
@@ -310,24 +354,24 @@ function dessinerMeubles() {
     if (!m || !visible(pl)) continue;
     const poly = empreinte(pl, m);
     const z = zoneInclinaison(pl, m);
-    if (z) el('polygon', { points: pts(z), fill: '#4a7fd4', 'fill-opacity': 0.06, stroke: '#4a7fd4', 'stroke-width': 0.5, 'stroke-dasharray': '2,1' }, gCalques);
+    if (z) el('polygon', { points: pts(z), fill: T.zone, 'fill-opacity': 0.06, stroke: T.zone, 'stroke-width': 0.5 * T.epais, 'stroke-dasharray': '2,1' }, gCalques);
     const g = el('g', { class: 'meuble-svg', 'data-uid': pl.uid }, gMeubles);
     const mince = m.type !== 'sol';
-    const couleur = mince ? '#111' : COULEURS[m.categorie];
-    let stroke = '#1f2937', sw = 0.5;
-    if (pb.has(pl.uid)) { stroke = '#e03030'; sw = 1.6; } else if (pbInfo.has(pl.uid)) { stroke = '#f08a00'; sw = 1.2; }
-    if (S.sel === pl.uid) { sw += 0.8; stroke = pb.has(pl.uid) ? '#e03030' : '#0b5ed7'; }
+    const couleur = mince ? T.mince : T.meubles[m.categorie];
+    let stroke = T.trait, sw = 0.5 * T.epais;
+    if (pb.has(pl.uid)) { stroke = T.probleme; sw = 1.6 * T.epais; } else if (pbInfo.has(pl.uid)) { stroke = T.info; sw = 1.2 * T.epais; }
+    if (S.sel === pl.uid) { sw += 0.8; stroke = pb.has(pl.uid) ? T.probleme : T.selection; }
     el('polygon', { points: pts(poly), fill: couleur, 'fill-opacity': mince ? 0.95 : 0.82, stroke, 'stroke-width': sw }, g);
     // repère du devant : trait blanc au milieu du côté avant
     const [x0, y0, x1, y1] = bornes(poly);
     if (!mince && m.forme !== 'octogone') {
       const [w, d] = dims(pl, m), L = Math.min(6, w / 3);
       const [ax, ay] = versMonde(pl, -L, -d / 2 + 0.6), [bx, by] = versMonde(pl, L, -d / 2 + 0.6);
-      el('line', { x1: ax, y1: -ay, x2: bx, y2: -by, stroke: '#fff', 'stroke-width': 1.2 }, g);
+      el('line', { x1: ax, y1: -ay, x2: bx, y2: -by, stroke: T.devant, 'stroke-width': 1.2 }, g);
     }
     if (!mince) {
       const fs = Math.max(2.2, Math.min(3.4, (x1 - x0) / 9));
-      const t = el('text', { x: (x0 + x1) / 2, y: -(y0 + y1) / 2 + fs / 3, 'font-size': fs, 'text-anchor': 'middle', fill: '#111' }, g);
+      const t = el('text', { x: (x0 + x1) / 2, y: -(y0 + y1) / 2 + fs / 3, 'font-size': fs, 'text-anchor': 'middle', fill: T.texteMeuble }, g);
       t.textContent = m.nom.replace(/\s*\(.*\)/, '');
     }
     g.addEventListener('pointerdown', (ev) => debutGlisser(ev, pl.uid));
@@ -348,12 +392,12 @@ function dessinerPoignees() {
   const g = el('g', {}, gMeubles);
   for (const [cote, [nx, ny]] of Object.entries(COTES_LOCAUX)) {
     const [x, y] = versMonde(pl, nx * w / 2, ny * d / 2);
-    const r = el('rect', { x: x - h / 2, y: -y - h / 2, width: h, height: h, fill: '#ffffff', stroke: '#0b5ed7', 'stroke-width': 0.8, style: 'cursor:move' }, g);
+    const r = el('rect', { x: x - h / 2, y: -y - h / 2, width: h, height: h, fill: T.poignee, stroke: T.selection, 'stroke-width': 0.8 * T.epais, style: 'cursor:move' }, g);
     r.addEventListener('pointerdown', (ev) => debutRedim(ev, pl.uid, cote));
   }
   const [, , , y1] = bornes(empreinte(pl, m));
   const fs = Math.max(2.6, S.vb.w / 100);
-  el('text', { x: pl.x, y: -y1 - h - 1, 'font-size': fs, 'font-weight': 700, fill: '#0b5ed7', 'text-anchor': 'middle' }, g)
+  el('text', { x: pl.x, y: -y1 - h - 1, 'font-size': fs, 'font-weight': 700, fill: T.selection, 'text-anchor': 'middle' }, g)
     .textContent = `${r1(w)} × ${r1(d)} po`;
 }
 function debutRedim(ev, id, cote) {
@@ -409,13 +453,13 @@ function dessinerResultats() {
   for (const p of S.resultats.pieces) {
     if (S.onglet && p.piece !== S.onglet) continue;
     const [cx, cy] = p.centre;
-    el('circle', { cx, cy: -cy, r: Math.min(p.cercle, d) / 2, fill: 'none', stroke: p.ok ? '#2fb35a' : '#e03030', 'stroke-width': 0.8, 'stroke-dasharray': '3,2' }, gResultats);
+    el('circle', { cx, cy: -cy, r: Math.min(p.cercle, d) / 2, fill: 'none', stroke: p.ok ? T.cercleOk : T.cercleKo, 'stroke-width': 0.8 * T.epais, 'stroke-dasharray': '3,2' }, gResultats);
   }
   for (const a of S.resultats.acces) {
     if (a.accessible) continue;
     const pl = S.placements.find((x) => x.uid === a.uid);
     if (!pl || !visible(pl)) continue;
-    el('text', { x: pl.x, y: -pl.y - 4, 'font-size': 7, 'font-weight': 700, fill: '#e03030', 'text-anchor': 'middle' }, gResultats).textContent = '!';
+    el('text', { x: pl.x, y: -pl.y - 4, 'font-size': 7, 'font-weight': 700, fill: T.probleme, 'text-anchor': 'middle' }, gResultats).textContent = '!';
   }
 }
 
@@ -832,6 +876,12 @@ function exporterSVG() {
 
 /* ------------------------------------------------------------------ démarrage */
 async function demarrer() {
+  let themeMemorise = 'classique';
+  try { themeMemorise = localStorage.getItem(CLE_THEME) || 'classique'; } catch (e) { /* navigation privée */ }
+  $('theme').innerHTML = Object.entries(THEMES).map(([k, t]) => `<option value="${k}">${t.nom}</option>`).join('');
+  appliquerTheme(themeMemorise, false);
+  $('theme').onchange = () => appliquerTheme($('theme').value);
+  window.addEventListener('storage', (ev) => { if (ev.key === CLE_THEME && ev.newValue) appliquerTheme(ev.newValue, false); });   // autres fenêtres
   try {
     const [plan, cat] = await Promise.all([api('/api/plan'), api('/api/catalogue')]);
     S.plan = plan; S.cat = cat.meubles; S.catById = Object.fromEntries(cat.meubles.map((m) => [m.id, m]));
