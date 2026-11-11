@@ -50,3 +50,14 @@ def test_lit_accessible_cote_nord():
     res = rules.verifier(V3)
     lit = [a for a in res['acces'] if a['uid'] == 'v3-01'][0]
     assert lit['accessible'] and 'nord' in lit['cotes']
+
+
+def test_ilot_redimensionne():
+    """Un îlot agrandi par l'utilisateur est vérifié avec sa nouvelle taille."""
+    pl = [dict(p) for p in V3]
+    ilot = [p for p in pl if p['uid'] == 'v3-15'][0]
+    assert not [p for p in rules.verifier(pl)['problemes'] if p['uid'] == 'v3-15']
+    ilot['w'] = 60          # s'étend vers l'ouest jusque sur la chaise de cuisine de Mom
+    ilot['x'] -= (60 - 26.8) / 2
+    msgs = [p['message'] for p in rules.verifier(pl)['problemes'] if p['uid'] == 'v3-15' or p.get('uid2') == 'v3-15']
+    assert any('chevauche' in m for m in msgs)

@@ -222,6 +222,46 @@ function dessinerMeubles() {
     }
     g.addEventListener('pointerdown', (ev) => debutGlisser(ev, pl.uid));
   }
+  dessinerPoignees();
+}
+
+/* Poignées de redimensionnement (meubles « sur mesure ») : une au milieu de chaque côté. */
+const TAILLE_MIN = 6, TAILLE_MAX = 200;
+function dessinerPoignees() {
+  const pl = S.placements.find((p) => p.uid === S.sel);
+  const m = pl && S.catById[pl.item];
+  if (!m || !m.redimensionnable) return;
+  const [x0, y0, x1, y1] = bornes(empreinte(pl, m));
+  const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+  const h = Math.max(2, S.vb.w / 110);
+  const g = el('g', {}, gMeubles);
+  const cotes = { est: [x1, cy, 'ew-resize'], ouest: [x0, cy, 'ew-resize'], nord: [cx, y1, 'ns-resize'], sud: [cx, y0, 'ns-resize'] };
+  for (const [cote, [x, y, curseur]] of Object.entries(cotes)) {
+    const r = el('rect', { x: x - h / 2, y: -y - h / 2, width: h, height: h, fill: '#ffffff', stroke: '#0b5ed7', 'stroke-width': 0.8, style: `cursor:${curseur}` }, g);
+    r.addEventListener('pointerdown', (ev) => debutRedim(ev, pl.uid, cote));
+  }
+  const [sx, sy] = taille(pl, m);
+  const fs = Math.max(2.6, S.vb.w / 100);
+  el('text', { x: cx, y: -y1 - h - 1, 'font-size': fs, 'font-weight': 700, fill: '#0b5ed7', 'text-anchor': 'middle' }, g)
+    .textContent = `${r1(sx)} × ${r1(sy)} po`;
+}
+function debutRedim(ev, id, cote) {
+  ev.stopPropagation();
+  const pl = S.placements.find((p) => p.uid === id);
+  glisse = { type: 'redim', id, cote, b: bornes(empreinte(pl, S.catById[pl.item])) };
+  $('plan').setPointerCapture(ev.pointerId);
+}
+function redimensionner(pl, cote, b, mx, my) {
+  let [x0, y0, x1, y1] = b;
+  const snap = (v) => Math.round(v * 2) / 2;
+  const borne = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+  if (cote === 'est') x1 = borne(snap(mx), x0 + TAILLE_MIN, x0 + TAILLE_MAX);
+  if (cote === 'ouest') x0 = borne(snap(mx), x1 - TAILLE_MAX, x1 - TAILLE_MIN);
+  if (cote === 'nord') y1 = borne(snap(my), y0 + TAILLE_MIN, y0 + TAILLE_MAX);
+  if (cote === 'sud') y0 = borne(snap(my), y1 - TAILLE_MAX, y1 - TAILLE_MIN);
+  const sx = x1 - x0, sy = y1 - y0;
+  pl.x = (x0 + x1) / 2; pl.y = (y0 + y1) / 2;
+  if (pl.rot % 180 === 0) { pl.w = sx; pl.d = sy; } else { pl.w = sy; pl.d = sx; }
 }
 
 function dessinerResultats() {
@@ -283,6 +323,12 @@ function initVue() {
       const [x, y] = versPlan(ev);
       const nx = Math.round((x + glisse.dx) * 2) / 2, ny = Math.round((y + glisse.dy) * 2) / 2;
       if (nx !== pl.x || ny !== pl.y) { pl.x = nx; pl.y = ny; marquerModifie(); controles(); dessinerMeubles(); dessinerSelection(); }
+    } else if (glisse.type === 'redim') {
+      const pl = S.placements.find((p) => p.uid === glisse.id);
+      const [x, y] = versPlan(ev);
+      const avant = `${pl.w},${pl.d},${pl.x},${pl.y}`;
+      redimensionner(pl, glisse.cote, glisse.b, x, y);
+      if (`${pl.w},${pl.d},${pl.x},${pl.y}` !== avant) { marquerModifie(); controles(); dessinerMeubles(); dessinerSelection(); }
     } else {
       const r = svg.getBoundingClientRect(), k = glisse.vb.w / r.width;
       S.vb.x = glisse.vb.x - (ev.clientX - glisse.sx) * k;
@@ -290,7 +336,7 @@ function initVue() {
       appliquerVue();
     }
   });
-  const fin = () => { if (glisse && glisse.type === 'meuble') toutRedessiner(); glisse = null; };
+  const fin = () => { if (glisse && glisse.type !== 'vue') toutRedessiner(); glisse = null; };
   svg.addEventListener('pointerup', fin);
   svg.addEventListener('pointercancel', fin);
   svg.addEventListener('wheel', (ev) => {
@@ -327,9 +373,10 @@ function dessinerSelection() {
     <div class="champs">
       <label>Centre x (po)<input id="s-x" type="number" step="0.5" value="${pl.x}"></label>
       <label>Centre y (po)<input id="s-y" type="number" step="0.5" value="${pl.y}"></label>
-      ${m.redimensionnable ? `<label>Largeur (po)<input id="s-w" type="number" step="0.5" min="4" max="200" value="${pl.w || m.w}"></label>
-      <label>Profondeur (po)<input id="s-d" type="number" step="0.5" min="4" max="200" value="${pl.d || m.d}"></label>` : ''}
+      ${m.redimensionnable ? `<label>Est-ouest (po)<input id="s-ex" type="number" step="0.5" min="${TAILLE_MIN}" max="${TAILLE_MAX}" value="${r1(sx)}"></label>
+      <label>Nord-sud (po)<input id="s-ns" type="number" step="0.5" min="${TAILLE_MIN}" max="${TAILLE_MAX}" value="${r1(sy)}"></label>` : ''}
     </div>
+    ${m.redimensionnable ? `<p class="aide">Dimensions ajustables : tapez-les ci-dessus ou glissez les poignées blanches sur le plan (pas de 0,5 po, ${TAILLE_MIN} à ${TAILLE_MAX} po). Le centre reste en place quand vous tapez une valeur.</p>` : ''}
     <div class="boutons">
       <button id="s-rotg" title="Tourner à gauche">⟲ 90°</button>
       <button id="s-rotd" title="Tourner à droite (R)">⟳ 90°</button>
@@ -338,10 +385,14 @@ function dessinerSelection() {
     </div>`;
   const maj = () => {
     pl.x = +$('s-x').value; pl.y = +$('s-y').value;
-    if (m.redimensionnable) { pl.w = +$('s-w').value; pl.d = +$('s-d').value; }
+    if (m.redimensionnable) {
+      const borne = (v) => Math.min(TAILLE_MAX, Math.max(TAILLE_MIN, Math.round((+v || TAILLE_MIN) * 2) / 2));
+      const ex = borne($('s-ex').value), ns = borne($('s-ns').value);
+      if (pl.rot % 180 === 0) { pl.w = ex; pl.d = ns; } else { pl.w = ns; pl.d = ex; }
+    }
     marquerModifie(); toutRedessiner();
   };
-  for (const id of ['s-x', 's-y', 's-w', 's-d']) if ($(id)) $(id).onchange = maj;
+  for (const id of ['s-x', 's-y', 's-ex', 's-ns']) if ($(id)) $(id).onchange = maj;
   $('s-rotg').onclick = () => tourner(pl, -90);
   $('s-rotd').onclick = () => tourner(pl, 90);
   $('s-sup').onclick = () => enlever(pl.uid);
@@ -387,6 +438,7 @@ function dessinerCatalogue() {
       if (m.type === 'sur_meuble') badges.push('<span class="badge">posé sur un meuble</span>');
       if (m.type === 'accessoire') badges.push('<span class="badge">accessoire</span>');
       if (m.inclinaison) badges.push(`<span class="badge">${m.inclinaison} po incliné</span>`);
+      if (m.redimensionnable) badges.push('<span class="badge">dimensions ajustables</span>');
       badges.push(`<span class="badge">${n}/${m.quantite} placé${m.quantite > 1 ? 's' : ''}</span>`);
       d.innerHTML = `<div><div class="nom">${m.nom}</div><div class="dim">${m.w} × ${m.d} po${m.forme === 'octogone' ? ' (octogone)' : ''}</div></div>
         <button title="Ajouter" ${n >= m.quantite ? 'disabled' : ''}>+</button><div class="badges">${badges.join('')}</div>`;
