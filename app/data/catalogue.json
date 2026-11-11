@@ -1,0 +1,39 @@
+{
+  "source": "input/currentfurniture.csv (meubles existants) + achats proposés dans proposition_v3.md. Dimensions en pouces : w = largeur (côté avant), d = profondeur.",
+  "notes_csv": [
+    "Ligne « tv chambre » : la colonne forme contient « chambre » ; traitée comme rectangulaire.",
+    "Ligne « armoire salle de bains » : espace avant « rectangulaire » ; ignoré.",
+    "Colonnes longueur/largeur utilisées dans les deux sens dans le CSV ; ici w et d sont explicites."
+  ],
+  "meubles": [
+    {"id": "lit-articule", "nom": "Lit articulé", "categorie": "existant", "essentiel": true, "w": 84, "d": 78, "forme": "rect", "type": "sol", "quantite": 1, "acces": true, "lit": true, "note": "Deux bases de 39 po (supposé). Côté de transfert : 36 po."},
+    {"id": "recliner", "nom": "Recliner", "categorie": "existant", "essentiel": true, "w": 30, "d": 30, "forme": "rect", "type": "sol", "quantite": 2, "acces": true, "inclinaison": 64, "note": "64 po complètement incliné."},
+    {"id": "table-cuisine", "nom": "Table cuisine (octogonale)", "categorie": "existant", "essentiel": true, "w": 37, "d": 37, "forme": "octogone", "type": "sol", "quantite": 1, "acces": false},
+    {"id": "commode-mom", "nom": "Commode Mom", "categorie": "existant", "essentiel": true, "w": 57, "d": 19, "forme": "rect", "type": "sol", "quantite": 1, "acces": true},
+    {"id": "commode-bob", "nom": "Commode Bob", "categorie": "existant", "essentiel": true, "w": 35, "d": 19, "forme": "rect", "type": "sol", "quantite": 1, "acces": true},
+    {"id": "tv-salon", "nom": "TV salon (murale)", "categorie": "existant", "essentiel": true, "w": 48, "d": 2, "forme": "rect", "type": "mural", "quantite": 1, "acces": false, "note": "Accrochée au mur : un meuble peut aller dessous."},
+    {"id": "tv-chambre", "nom": "TV chambre (sur un meuble)", "categorie": "existant", "essentiel": true, "w": 38, "d": 2, "forme": "rect", "type": "sur_meuble", "quantite": 1, "acces": false},
+    {"id": "armoire-sdb", "nom": "Armoire salle de bains", "categorie": "existant", "essentiel": true, "w": 18, "d": 11, "forme": "rect", "type": "sol", "quantite": 1, "acces": true},
+    {"id": "table-puzzle", "nom": "Table puzzle", "categorie": "existant", "essentiel": false, "w": 70, "d": 42, "forme": "rect", "type": "sol", "quantite": 1, "acces": false},
+    {"id": "causeuse", "nom": "Causeuse", "categorie": "existant", "essentiel": false, "w": 65, "d": 35, "forme": "rect", "type": "sol", "quantite": 1, "acces": true},
+    {"id": "armoire-21x38", "nom": "Armoire 21×38", "categorie": "existant", "essentiel": false, "w": 38, "d": 21, "forme": "rect", "type": "sol", "quantite": 1, "acces": true},
+    {"id": "armoire-19x36", "nom": "Armoire 19×36", "categorie": "existant", "essentiel": false, "w": 36, "d": 19, "forme": "rect", "type": "sol", "quantite": 1, "acces": true},
+    {"id": "congelateur", "nom": "Congélateur", "categorie": "existant", "essentiel": false, "w": 35, "d": 23, "forme": "rect", "type": "sol", "quantite": 1, "acces": true},
+    {"id": "bureau-36x108", "nom": "Bureau 36×108", "categorie": "existant", "essentiel": false, "w": 108, "d": 36, "forme": "rect", "type": "sol", "quantite": 1, "acces": false},
+    {"id": "table-chevet", "nom": "Table de chevet", "categorie": "existant", "essentiel": false, "w": 22, "d": 16, "forme": "rect", "type": "sol", "quantite": 1, "acces": false},
+
+    {"id": "bureau-40x24", "nom": "Bureau 40×24 (écran 48 po)", "categorie": "nouveau", "essentiel": false, "w": 40, "d": 24, "forme": "rect", "type": "sol", "quantite": 1, "acces": false},
+    {"id": "bureau-60x30", "nom": "Bureau 60×30", "categorie": "nouveau", "essentiel": false, "w": 60, "d": 30, "forme": "rect", "type": "sol", "quantite": 1, "acces": false},
+    {"id": "chaise-bureau", "nom": "Chaise de bureau (accoudoirs)", "categorie": "nouveau", "essentiel": false, "w": 24, "d": 24, "forme": "rect", "type": "sol", "quantite": 2, "acces": true},
+    {"id": "chaise-cuisine", "nom": "Chaise cuisine (accoudoirs)", "categorie": "nouveau", "essentiel": false, "w": 22, "d": 22, "forme": "rect", "type": "sol", "quantite": 4, "acces": true},
+    {"id": "chaise-puzzle", "nom": "Chaise puzzle (accoudoirs)", "categorie": "nouveau", "essentiel": false, "w": 24, "d": 24, "forme": "rect", "type": "sol", "quantite": 1, "acces": true},
+    {"id": "fauteuil", "nom": "Fauteuil confortable", "categorie": "nouveau", "essentiel": false, "w": 30, "d": 30, "forme": "rect", "type": "sol", "quantite": 2, "acces": true},
+    {"id": "vaisselier", "nom": "Vaisselier", "categorie": "nouveau", "essentiel": false, "w": 34, "d": 19, "forme": "rect", "type": "sol", "quantite": 1, "acces": true},
+    {"id": "table-appoint", "nom": "Table d'appoint", "categorie": "nouveau", "essentiel": false, "w": 16, "d": 16, "forme": "rect", "type": "sol", "quantite": 2, "acces": false},
+    {"id": "table-lit", "nom": "Table de lit roulante", "categorie": "nouveau", "essentiel": false, "w": 30, "d": 15, "forme": "rect", "type": "sol", "quantite": 1, "acces": false},
+    {"id": "tablette-murale", "nom": "Tablette murale", "categorie": "nouveau", "essentiel": false, "w": 24, "d": 8, "forme": "rect", "type": "mural", "quantite": 2, "acces": false},
+    {"id": "barre-securite", "nom": "Barre de sécurité du lit (32 po)", "categorie": "nouveau", "essentiel": false, "w": 32, "d": 2, "forme": "rect", "type": "accessoire", "quantite": 1, "acces": false, "note": "Fixée au lit : pas de collision."},
+
+    {"id": "ilot", "nom": "Îlot sur mesure", "categorie": "sur_mesure", "essentiel": false, "w": 36.4, "d": 25, "forme": "rect", "type": "sol", "quantite": 2, "acces": false, "redimensionnable": true, "note": "Dimensions ajustables. Ajouter une 2e pièce pour épouser la colonne."}
+  ]
+}

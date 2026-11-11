@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aménagement – 1400 rue Desgagné (4½ Style D)</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>Aménagement – 1400 rue Desgagné, 4½ Style D</h1>
+  <div class="plan-actions">
+    <input id="nom-plan" type="text" maxlength="80" aria-label="Nom du plan">
+    <span id="etat" class="etat"></span>
+    <button id="btn-enregistrer" class="primaire">Enregistrer</button>
+    <button id="btn-enregistrer-sous">Enregistrer sous…</button>
+    <select id="liste-plans" aria-label="Plans enregistrés"></select>
+    <button id="btn-ouvrir">Ouvrir</button>
+    <button id="btn-nouveau">Nouveau plan vide</button>
+    <button id="btn-supprimer" class="danger">Supprimer</button>
+    <button id="btn-export">Exporter SVG</button>
+  </div>
+</header>
+<main>
+  <aside id="catalogue">
+    <h2>Meubles</h2>
+    <p class="aide">Cliquez sur « + » pour ajouter un meuble au centre de la vue, puis glissez-le.</p>
+    <div id="liste-catalogue"></div>
+  </aside>
+  <section id="zone-plan">
+    <svg id="plan" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div class="aide-plan">Glisser : déplacer · <b>R</b> : tourner · <b>Suppr</b> : enlever · flèches : 1 po (Maj : 6 po) · molette : zoom · glisser le fond : déplacer la vue</div>
+    <div class="legende">
+      <span><i class="c-existant"></i>Existant</span><span><i class="c-nouveau"></i>À acheter</span><span><i class="c-sur_mesure"></i>Sur mesure</span>
+      <span><i class="c-probleme"></i>Problème</span><span><i class="c-plinthe"></i>Plinthe chauffante</span>
+    </div>
+  </section>
+  <aside id="panneau">
+    <section id="selection">
+      <h2>Sélection</h2>
+      <div id="sel-contenu"><p class="aide">Aucun meuble sélectionné.</p></div>
+    </section>
+    <section>
+      <h2>Contrôles en direct</h2>
+      <ul id="problemes" class="liste"></ul>
+    </section>
+    <section>
+      <h2>Vérification complète</h2>
+      <div class="parametres">
+        <label>Passage (po) <input id="p-passage" type="number" min="24" max="60" step="1" value="36"></label>
+        <label>Cercle de rotation (po) <input id="p-cercle" type="number" min="24" max="72" step="1" value="48"></label>
+        <label>Distance plinthes (po) <input id="p-plinthe" type="number" min="0" max="48" step="1" value="12"></label>
+        <label>Côté du lit (po) <input id="p-cote_lit" type="number" min="12" max="60" step="1" value="36"></label>
+      </div>
+      <button id="btn-verifier" class="primaire">Vérifier le plan</button>
+      <div id="resultats"></div>
+    </section>
+  </aside>
+</main>
+<footer>Dimensions en pouces. x : depuis le mur ouest de la chambre SO ; y : depuis le mur sud. Plan extrait de floorplan.pdf (échelle 1:100) ; certaines valeurs sont estimées (±2–3 po).</footer>
+<script src="app.js"></script>
+</body>
+</html>

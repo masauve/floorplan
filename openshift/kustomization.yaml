@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: floorplan
+labels:
+  - pairs:
+      app: floorplan
+      app.kubernetes.io/part-of: floorplan
+    includeSelectors: false
+resources:
+  - imagestream.yaml
+  - buildconfig.yaml
+  - pvc.yaml
+  - deployment.yaml
+  - service.yaml
+  - route.yaml

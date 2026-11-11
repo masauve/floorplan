@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: floorplan
+spec:
+  selector:
+    deployment: floorplan
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http

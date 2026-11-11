@@ -1,0 +1,52 @@
+"""Le moteur doit reproduire les valeurs validées à la main pour la proposition v3."""
+import json
+from pathlib import Path
+
+from app import rules
+
+V3 = json.loads((Path(rules.__file__).parent / 'data' / 'plans_initiaux.json').read_text(encoding='utf-8'))[0]['placements']
+
+
+def test_v3_sans_probleme():
+    res = rules.verifier(V3)
+    bloquants = [p for p in res['problemes'] if p['type'] != 'plinthe']
+    assert bloquants == []
+    assert res['essentiels_manquants'] == []
+
+
+def test_v3_cercles():
+    res = rules.verifier(V3)
+    cercles = {p['piece']: p['cercle'] for p in res['pieces']}
+    assert cercles['BR_SW'] == 38.0
+    assert cercles['BR_NE'] == 61.6
+    assert cercles['LIVING'] == 68.0
+    assert cercles['BATH'] == 51.1
+
+
+def test_v3_acces_mom():
+    res = rules.verifier(V3)
+    acces = {a['uid']: a['accessible'] for a in res['acces']}
+    assert acces['v3-08']          # recliner de Mom
+    assert acces['v3-11']          # chaise de cuisine de Mom
+    assert acces['v3-14']          # chaise de bureau
+    assert not acces['v3-03']      # commode Mom au pied du lit : non accessible avec la marchette
+
+
+def test_lit_cote_transfert():
+    res = rules.verifier(V3)
+    lit = res['lit'][0]
+    assert lit['transfert'] == 'nord'
+    assert lit['cotes'] == {'nord': 39, 'sud': 20}   # meilleure zone de 30 po de chaque côté
+    assert lit['ok']
+
+
+def test_chevauchement_detecte():
+    pl = V3 + [{'uid': 'x', 'item': 'causeuse', 'x': 85, 'y': 59, 'rot': 0}]
+    res = rules.verifier(pl)
+    assert any(p['type'] == 'chevauchement' for p in res['problemes'])
+
+
+def test_lit_accessible_cote_nord():
+    res = rules.verifier(V3)
+    lit = [a for a in res['acces'] if a['uid'] == 'v3-01'][0]
+    assert lit['accessible'] and 'nord' in lit['cotes']

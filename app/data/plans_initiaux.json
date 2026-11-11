@@ -1,0 +1,28 @@
+[
+  {
+    "nom": "Proposition v3 (référence)",
+    "placements": [
+      {"uid": "v3-01", "item": "lit-articule", "x": 85.2, "y": 59, "rot": 0},
+      {"uid": "v3-02", "item": "barre-securite", "x": 92, "y": 99, "rot": 0},
+      {"uid": "v3-03", "item": "commode-mom", "x": 9.5, "y": 59, "rot": 270},
+      {"uid": "v3-04", "item": "tv-chambre", "x": 9, "y": 59, "rot": 270},
+      {"uid": "v3-05", "item": "commode-bob", "x": 70.2, "y": 127.5, "rot": 0},
+      {"uid": "v3-06", "item": "armoire-19x36", "x": 141.4, "y": 71, "rot": 270},
+      {"uid": "v3-07", "item": "tv-salon", "x": 132.9, "y": 71, "rot": 270},
+      {"uid": "v3-08", "item": "recliner", "x": 237, "y": 87, "rot": 90},
+      {"uid": "v3-09", "item": "recliner", "x": 237, "y": 55, "rot": 90},
+      {"uid": "v3-10", "item": "table-cuisine", "x": 272.5, "y": 62.5, "rot": 0},
+      {"uid": "v3-11", "item": "chaise-cuisine", "x": 272.5, "y": 94, "rot": 0},
+      {"uid": "v3-12", "item": "chaise-cuisine", "x": 272.5, "y": 31, "rot": 180},
+      {"uid": "v3-13", "item": "bureau-40x24", "x": 354.4, "y": 32, "rot": 90},
+      {"uid": "v3-14", "item": "chaise-bureau", "x": 330.4, "y": 32, "rot": 270},
+      {"uid": "v3-15", "item": "ilot", "x": 343.4, "y": 95.2, "rot": 0, "w": 26.8, "d": 25},
+      {"uid": "v3-16", "item": "ilot", "x": 361.6, "y": 92.8, "rot": 0, "w": 9.6, "d": 20.2},
+      {"uid": "v3-17", "item": "table-puzzle", "x": 325, "y": 203, "rot": 0},
+      {"uid": "v3-18", "item": "chaise-puzzle", "x": 325, "y": 236, "rot": 0},
+      {"uid": "v3-19", "item": "fauteuil", "x": 363.4, "y": 263, "rot": 90},
+      {"uid": "v3-20", "item": "armoire-21x38", "x": 367.9, "y": 298.8, "rot": 90},
+      {"uid": "v3-21", "item": "armoire-sdb", "x": 232, "y": 336.2, "rot": 0}
+    ]
+  }
+]

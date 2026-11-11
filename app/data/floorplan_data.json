@@ -1,0 +1,5062 @@
+{
+ "meta": {
+  "source": "input/floorplan.pdf, page 1 (Le Monastère, 4 1/2 Style D, 1400 rue Desgagné)",
+  "extraction": "vector geometry from the PDF (pdftocairo -svg), calibrated on the room labels",
+  "units": "inches",
+  "scale": "drawing at 1:100 (1 PDF pt = 100/72 = 1.38889 in)",
+  "origin": "interior south-west corner of bedroom SW (inside face of west wall, inside face of south wall)",
+  "axes": "+x = east, +y = north",
+  "pdf_to_inches": "x_in = (x_pt - 291.42) * 100/72 ; y_in = (410.84 - y_pt) * 100/72",
+  "calibration_check": {
+   "BR_SW": "127.2 x 137.0 vs label 127 x 137",
+   "LIVING": "234.5 x 175.2 vs label 235 x 175",
+   "BR_NE N-S": "137.9 vs label 138"
+  },
+  "source_tags": {
+   "label": "written on the plan (+/-1 in)",
+   "vector": "measured on the PDF vector walls (+/-0.5 in)",
+   "extrapolated": "estimated from drawn symbols/diagonals (+/-2-3 in), verify on site"
+  },
+  "unknown": [
+   "ceiling height",
+   "window sill heights",
+   "door clear widths (only rough openings / leaf lengths)",
+   "heater length/depth and required furniture clearance (heaters confirmed under each window)",
+   "outlet, switch and light positions (not drawn)",
+   "floor thresholds (balcony, bathroom)"
+  ],
+  "gross_interior_floor_area": {
+   "sq_in": 100890,
+   "sq_ft": 700.6,
+   "m2": 65.09,
+   "note": "area of the drawn floor fill (includes interior partitions and closets, excludes balcony)",
+   "source": "vector"
+  }
+ },
+ "local_frames": {
+  "BR_SW": "x_local = X (from west wall), y_local = 137.0 - Y (from north wall)",
+  "BR_NE": "x_from_east = 378.4 - X, y_from_north = 317.8 - Y",
+  "LIVING": "x_local = X - 131.9 (from west partition), y_local = Y (from south wall)"
+ },
+ "rooms": [
+  {
+   "id": "BR_SW",
+   "name_fr": "Chambre (SO)",
+   "name_en": "Bedroom SW",
+   "label_on_plan": "CHAMBRE 10'-7\" x 11'-5\"",
+   "label_dims_in": {
+    "E-W": 127,
+    "N-S": 137,
+    "source": "label"
+   },
+   "measured_dims_in": {
+    "E-W": 127.2,
+    "N-S": 137.0,
+    "source": "vector",
+    "note": "interior faces; N-S includes the closet depth"
+   },
+   "bounds": {
+    "x": [
+     0,
+     127.2
+    ],
+    "y": [
+     0,
+     137.0
+    ]
+   },
+   "polygon": [
+    [
+     4.4,
+     0
+    ],
+    [
+     121.7,
+     0
+    ],
+    [
+     121.7,
+     9.7
+    ],
+    [
+     127.2,
+     9.7
+    ],
+    [
+     127.2,
+     137.0
+    ],
+    [
+     52.7,
+     137.0
+    ],
+    [
+     52.7,
+     113.0
+    ],
+    [
+     0,
+     113.0
+    ],
+    [
+     0,
+     9.7
+    ],
+    [
+     4.4,
+     9.7
+    ]
+   ],
+   "area_sq_in": 16066,
+   "area_sq_ft": 111.6,
+   "area_m2": 10.36,
+   "obstructions": [
+    {
+     "what": "corner pillar SW",
+     "x": [
+      0,
+      4.4
+     ],
+     "y": [
+      0,
+      9.7
+     ],
+     "source": "vector"
+    },
+    {
+     "what": "corner pillar SE",
+     "x": [
+      121.7,
+      127.2
+     ],
+     "y": [
+      0,
+      9.7
+     ],
+     "source": "vector"
+    },
+    {
+     "what": "closet C1 block (incl. 4.7 in side wall)",
+     "x": [
+      0,
+      52.7
+     ],
+     "y": [
+      113.0,
+      137.0
+     ],
+     "source": "vector"
+    }
+   ],
+   "free_rectangle_in": "127.2 x 113.0 (below closet) + 74.5 x 24.0 strip (x 52.7-127.2, y 113-137)"
+  },
+  {
+   "id": "BR_NE",
+   "name_fr": "Chambre (NE)",
+   "name_en": "Bedroom NE",
+   "label_on_plan": "CHAMBRE 10'-0\" x 11'-6\"",
+   "label_dims_in": {
+    "E-W": 120,
+    "N-S": 138,
+    "source": "label"
+   },
+   "measured_dims_in": {
+    "N-S": 137.9,
+    "E-W_at_north_wall": 101.6,
+    "E-W_at_south_wall": 124.4,
+    "E-W_label_line": "x = 258.4 (378.4 - 120)",
+    "source": "vector",
+    "note": "irregular west side: diagonal wall (bathroom/vanity) + door alcove. Label 120 does not match any drawn wall; use 120 as the safe rectangular width (x 258.4-378.4)."
+   },
+   "bounds": {
+    "x": [
+     217.0,
+     378.4
+    ],
+    "y": [
+     179.9,
+     317.8
+    ]
+   },
+   "polygon": [
+    [
+     378.4,
+     179.9
+    ],
+    [
+     378.4,
+     317.8
+    ],
+    [
+     276.8,
+     317.8
+    ],
+    [
+     276.8,
+     279.7
+    ],
+    [
+     217.0,
+     219.9
+    ],
+    [
+     229.3,
+     207.7
+    ],
+    [
+     225.9,
+     204.3
+    ],
+    [
+     254.0,
+     178.6
+    ],
+    [
+     255.2,
+     179.9
+    ]
+   ],
+   "area_sq_in": 17539,
+   "area_sq_ft": 121.8,
+   "area_m2": 11.32,
+   "usable_rectangle": {
+    "x": [
+     258.4,
+     378.4
+    ],
+    "y": [
+     179.9,
+     317.8
+    ],
+    "note": "minus NW corner cut by the diagonal wall: the line x - y = -2.9 crosses it; corner (258.4..276.8, 261..317.8) partly blocked",
+    "source": "extrapolated"
+   }
+  },
+  {
+   "id": "BATH",
+   "name_fr": "Salle de bain",
+   "name_en": "Bathroom",
+   "label_on_plan": null,
+   "measured_dims_in": {
+    "E-W_main": 91.5,
+    "N-S_main (north wall to tub foot)": 60.0,
+    "depth_to_south_vertex": 104.5,
+    "source": "vector"
+   },
+   "bounds": {
+    "x": [
+     180.7,
+     272.2
+    ],
+    "y": [
+     237.2,
+     341.7
+    ]
+   },
+   "polygon": [
+    [
+     180.7,
+     341.7
+    ],
+    [
+     272.2,
+     341.7
+    ],
+    [
+     272.2,
+     281.7
+    ],
+    [
+     241.0,
+     281.7
+    ],
+    [
+     241.0,
+     277.0
+    ],
+    [
+     253.3,
+     262.8
+    ],
+    [
+     227.6,
+     237.2
+    ],
+    [
+     180.7,
+     284.1
+    ]
+   ],
+   "area_sq_in": 7147,
+   "area_sq_ft": 49.6,
+   "area_m2": 4.61,
+   "turning_circle_max": {
+    "diameter_in": 51.1,
+    "center": [
+     214.7,
+     286.2
+    ]
+   },
+   "note": "rectangle 91.5 x 60.0 + triangular south part (vanity). Diagonal faces extrapolated from 45-degree wall pieces."
+  },
+  {
+   "id": "ENTRY",
+   "name_fr": "Vestibule d'entrée",
+   "name_en": "Entry vestibule",
+   "label_on_plan": null,
+   "bounds": {
+    "x": [
+     134.2,
+     224.2
+    ],
+    "y": [
+     217.6,
+     288.5
+    ]
+   },
+   "polygon": [
+    [
+     134.2,
+     253.8
+    ],
+    [
+     137.9,
+     261.0
+    ],
+    [
+     166.0,
+     288.5
+    ],
+    [
+     224.2,
+     233.8
+    ],
+    [
+     210.3,
+     219.9
+    ],
+    [
+     157.0,
+     217.6
+    ],
+    [
+     134.2,
+     240.4
+    ]
+   ],
+   "area_sq_in": 3838,
+   "area_sq_ft": 26.7,
+   "area_m2": 2.48,
+   "turning_circle_max": {
+    "diameter_in": 56.9,
+    "center": [
+     166.2,
+     248.6
+    ]
+   },
+   "note": "diamond-shaped tiled area between the entry door (NW), the bathroom wall (NE) and the closets (SW). Closed on the SE by an imaginary line toward the passage. Extrapolated.",
+   "source": "extrapolated"
+  },
+  {
+   "id": "PASSAGE",
+   "name_fr": "Passage vestibule-séjour",
+   "name_en": "Passage entry-living",
+   "label_on_plan": null,
+   "polygon": [
+    [
+     199.4,
+     168.4
+    ],
+    [
+     252.7,
+     175.2
+    ],
+    [
+     254.0,
+     178.6
+    ],
+    [
+     225.9,
+     204.3
+    ],
+    [
+     222.6,
+     207.7
+    ],
+    [
+     210.3,
+     219.9
+    ],
+    [
+     157.0,
+     217.6
+    ],
+    [
+     182.5,
+     192.1
+    ],
+    [
+     202.8,
+     171.8
+    ]
+   ],
+   "area_sq_in": 2623,
+   "area_sq_ft": 18.2,
+   "area_m2": 1.69,
+   "min_width_in": {
+    "between_closet_B_and_short_wall": 39.3,
+    "if_thick_L_mark_is_solid": 30.0,
+    "source": "vector",
+    "note": "39.3 = distance between parallel faces x+y=374.6 and x+y=430.2. The thick L mark at (163.6-181.8, 192-210.6) is unidentified; if solid, the clear width drops to 30.0 (L corner to wall vertex (210.3,219.9))."
+   }
+  },
+  {
+   "id": "LIVING",
+   "name_fr": "Séjour, salle à manger & cuisine",
+   "name_en": "Living / dining / kitchen",
+   "label_on_plan": "SEJOUR, SALLE A MANGER & CUISINE 19'-7\" x 14'-7\"",
+   "label_dims_in": {
+    "E-W": 235,
+    "N-S": 175,
+    "source": "label"
+   },
+   "measured_dims_in": {
+    "E-W": 234.5,
+    "N-S": 175.2,
+    "source": "vector",
+    "note": "E-W from SW-bedroom partition to east exterior wall; N-S from south exterior wall to kitchen/NE-bedroom partition"
+   },
+   "bounds": {
+    "x": [
+     131.9,
+     378.4
+    ],
+    "y": [
+     0,
+     175.2
+    ]
+   },
+   "polygon": [
+    [
+     136.5,
+     0
+    ],
+    [
+     356.8,
+     0
+    ],
+    [
+     356.8,
+     9.7
+    ],
+    [
+     366.4,
+     9.7
+    ],
+    [
+     366.4,
+     102.9
+    ],
+    [
+     356.8,
+     102.9
+    ],
+    [
+     356.8,
+     117.7
+    ],
+    [
+     378.4,
+     117.7
+    ],
+    [
+     378.4,
+     175.2
+    ],
+    [
+     252.7,
+     175.2
+    ],
+    [
+     199.4,
+     168.4
+    ],
+    [
+     165.4,
+     134.5
+    ],
+    [
+     163.8,
+     132.7
+    ],
+    [
+     131.9,
+     132.7
+    ],
+    [
+     131.9,
+     9.7
+    ],
+    [
+     136.5,
+     9.7
+    ]
+   ],
+   "area_sq_in": 39084,
+   "area_sq_ft": 271.4,
+   "area_m2": 25.22,
+   "zones": {
+    "kitchen_floor (tile)": {
+     "x": [
+      254.0,
+      378.4
+     ],
+     "y": [
+      102.9,
+      149.7
+     ],
+     "source": "extrapolated"
+    },
+    "kitchen_counters": "see fixtures",
+    "hall (north-west, in front of bedroom SW door and closet B)": {
+     "x": [
+      131.9,
+      252.7
+     ],
+     "y": [
+      98.8,
+      175.2
+     ],
+     "source": "extrapolated"
+    }
+   },
+   "obstructions": [
+    {
+     "what": "pillar SW",
+     "x": [
+      131.9,
+      136.5
+     ],
+     "y": [
+      0,
+      9.7
+     ],
+     "source": "vector"
+    },
+    {
+     "what": "pillar SE",
+     "x": [
+      356.8,
+      366.4
+     ],
+     "y": [
+      0,
+      9.7
+     ],
+     "source": "vector"
+    },
+    {
+     "what": "pillar E (column 12x24)",
+     "x": [
+      356.8,
+      378.4
+     ],
+     "y": [
+      102.9,
+      117.7
+     ],
+     "source": "vector"
+    }
+   ]
+  },
+  {
+   "id": "BALCONY",
+   "name_fr": "Balcon",
+   "name_en": "Balcony",
+   "label_on_plan": "BALCON",
+   "measured_dims_in": {
+    "E-W": 96.1,
+    "N-S": 48.0,
+    "source": "vector"
+   },
+   "bounds": {
+    "x": [
+     144.6,
+     240.7
+    ],
+    "y": [
+     -59.8,
+     -11.8
+    ]
+   },
+   "polygon": [
+    [
+     144.6,
+     -59.8
+    ],
+    [
+     240.7,
+     -59.8
+    ],
+    [
+     240.7,
+     -11.8
+    ],
+    [
+     144.6,
+     -11.8
+    ]
+   ],
+   "area_sq_in": 4613,
+   "area_sq_ft": 32.0,
+   "area_m2": 2.98,
+   "note": "outside the exterior wall; door recess x 160.7-224.7, y -11.8..0"
+  }
+ ],
+ "closets": [
+  {
+   "id": "C1",
+   "room": "BR_SW",
+   "x": [
+    0,
+    48.0
+   ],
+   "y": [
+    113.0,
+    137.0
+   ],
+   "width": 48.0,
+   "depth": 24.0,
+   "door": "bifold, opens south, projection ~8 in",
+   "source": "vector"
+  },
+  {
+   "id": "C2",
+   "room": "BR_NE",
+   "x": [
+    276.8,
+    324.9
+   ],
+   "y": [
+    317.8,
+    341.7
+   ],
+   "width": 48.1,
+   "depth": 23.9,
+   "door": "bifold, opens south, projection ~8 in",
+   "source": "vector"
+  },
+  {
+   "id": "C3",
+   "room": "BR_NE (door alcove)",
+   "polygon": [
+    [
+     217.0,
+     219.9
+    ],
+    [
+     229.3,
+     207.7
+    ],
+    [
+     247.7,
+     226.1
+    ],
+    [
+     235.4,
+     238.3
+    ]
+   ],
+   "width": 26,
+   "depth": 17,
+   "door": "bifold, faces south-east",
+   "source": "extrapolated"
+  },
+  {
+   "id": "C4",
+   "room": "ENTRY",
+   "location": "between the triangular wall (x 134-157, y 197-240) and closet C5",
+   "front_width": "~36-38",
+   "depth": "~20",
+   "door": "bifold, faces the entry/passage (north-east)",
+   "source": "extrapolated"
+  },
+  {
+   "id": "C5",
+   "room": "LIVING hall",
+   "front": [
+    [
+     165.4,
+     134.5
+    ],
+    [
+     199.4,
+     168.4
+    ]
+   ],
+   "front_width": 48.1,
+   "depth": "~24 (apex at 182.5,192.1)",
+   "door": "bifold, faces the living room (south-east)",
+   "source": "extrapolated"
+  }
+ ],
+ "openings": [
+  {
+   "id": "D_ENTRY",
+   "type": "door",
+   "between": "building corridor -> ENTRY",
+   "jambs": [
+    [
+     137.9,
+     261.0
+    ],
+    [
+     166.0,
+     288.5
+    ]
+   ],
+   "rough_opening_in": 39.3,
+   "leaf_in": 33.7,
+   "swing": "in, hinge at NE jamb (166,288.5), leaf opens toward SE",
+   "source": "extrapolated",
+   "conflict": "fully open leaf crosses the open bathroom door leaf near (182,266)"
+  },
+  {
+   "id": "D_BATH",
+   "type": "door",
+   "between": "ENTRY -> BATH",
+   "jambs": [
+    [
+     181.9,
+     279.6
+    ],
+    [
+     208.7,
+     252.9
+    ]
+   ],
+   "rough_opening_in": 37.9,
+   "leaf_in": 33.7,
+   "swing": "out into the entry (hinge at NW jamb ~ (181.6,279.6)); drawn open at 45 deg",
+   "source": "extrapolated"
+  },
+  {
+   "id": "D_BR_SW",
+   "type": "door",
+   "between": "LIVING hall -> BR_SW",
+   "jambs": [
+    [
+     129.5,
+     98.8
+    ],
+    [
+     129.5,
+     134.7
+    ]
+   ],
+   "rough_opening_in": 35.9,
+   "leaf_in": 34,
+   "swing": "into bedroom, hinge at north jamb, leaf parks along the bedroom north side (x 93-127)",
+   "source": "vector",
+   "note": "living-side clear opening 98.8-132.7 = 33.9 because the hall wall face is at y 132.7"
+  },
+  {
+   "id": "D_BR_NE",
+   "type": "door",
+   "between": "PASSAGE -> BR_NE",
+   "jambs": [
+    [
+     225.9,
+     204.3
+    ],
+    [
+     254.0,
+     178.6
+    ]
+   ],
+   "rough_opening_in": 38.0,
+   "leaf_in": 34,
+   "swing": "into bedroom, hinge at south jamb (254,179.9), leaf parks along x~254 (y 180-214)",
+   "source": "extrapolated"
+  },
+  {
+   "id": "D_BALCONY",
+   "type": "double door",
+   "between": "LIVING -> BALCONY",
+   "x": [
+    160.7,
+    224.7
+   ],
+   "y": 0,
+   "rough_opening_in": 64.0,
+   "leaf_in": "2 x ~30",
+   "swing": "out (onto balcony)",
+   "source": "vector"
+  },
+  {
+   "id": "W_BR_SW",
+   "type": "window",
+   "wall": "south",
+   "x": [
+    59.8,
+    107.9
+   ],
+   "rough_opening_in": 48.1,
+   "sashes": 2,
+   "source": "vector"
+  },
+  {
+   "id": "W_LIVING",
+   "type": "window",
+   "wall": "south",
+   "x": [
+    277.4,
+    325.4
+   ],
+   "rough_opening_in": 48.0,
+   "sashes": 2,
+   "source": "vector"
+  },
+  {
+   "id": "W_BR_NE",
+   "type": "window",
+   "wall": "east",
+   "y": [
+    187.3,
+    235.3
+   ],
+   "rough_opening_in": 48.0,
+   "sashes": 2,
+   "source": "vector"
+  }
+ ],
+ "fixtures": [
+  {
+   "id": "TUB",
+   "room": "BATH",
+   "polygon": [
+    [
+     241.0,
+     281.7
+    ],
+    [
+     272.2,
+     281.7
+    ],
+    [
+     272.2,
+     341.7
+    ],
+    [
+     241.0,
+     341.7
+    ]
+   ],
+   "size": "31.2 x 60.0",
+   "faucet_end": "south",
+   "source": "vector"
+  },
+  {
+   "id": "WC",
+   "room": "BATH",
+   "polygon": [
+    [
+     181.6,
+     312.3
+    ],
+    [
+     211.3,
+     312.3
+    ],
+    [
+     211.3,
+     333.2
+    ],
+    [
+     181.6,
+     333.2
+    ]
+   ],
+   "size": "29.7 deep (from west wall) x 20.9 wide",
+   "centerline_y": 322.7,
+   "centerline_to_north_wall": 19.0,
+   "clear_in_front_to_tub": 29.7,
+   "source": "extrapolated"
+  },
+  {
+   "id": "VANITY",
+   "room": "BATH",
+   "polygon": [
+    [
+     231.1,
+     242.5
+    ],
+    [
+     245.9,
+     257.3
+    ],
+    [
+     233.9,
+     269.3
+    ],
+    [
+     219.1,
+     254.5
+    ]
+   ],
+   "size": "~21 x 17, rotated 45 deg",
+   "source": "extrapolated"
+  },
+  {
+   "id": "COUNTER_N",
+   "room": "LIVING (kitchen)",
+   "polygon": [
+    [
+     254.0,
+     149.7
+    ],
+    [
+     346.0,
+     149.7
+    ],
+    [
+     346.0,
+     175.2
+    ],
+    [
+     254.0,
+     175.2
+    ]
+   ],
+   "depth": 25.5,
+   "note": "upper cabinets dashed at y~162.6 (~12.6 deep)",
+   "source": "extrapolated"
+  },
+  {
+   "id": "SINK",
+   "room": "LIVING (kitchen)",
+   "where": "diagonal corner unit, x 346-374, y 147-172",
+   "source": "extrapolated"
+  },
+  {
+   "id": "COUNTER_E",
+   "room": "LIVING (kitchen)",
+   "polygon": [
+    [
+     353.0,
+     144.3
+    ],
+    [
+     378.4,
+     144.3
+    ],
+    [
+     378.4,
+     175.2
+    ],
+    [
+     353.0,
+     175.2
+    ]
+   ],
+   "source": "extrapolated"
+  },
+  {
+   "id": "RANGE",
+   "room": "LIVING (kitchen)",
+   "polygon": [
+    [
+     298.5,
+     148.5
+    ],
+    [
+     328.5,
+     148.5
+    ],
+    [
+     328.5,
+     175.2
+    ],
+    [
+     298.5,
+     175.2
+    ]
+   ],
+   "size": "30 wide",
+   "source": "extrapolated"
+  },
+  {
+   "id": "APPLIANCE_X",
+   "room": "LIVING (kitchen)",
+   "polygon": [
+    [
+     353.0,
+     117.7
+    ],
+    [
+     378.4,
+     117.7
+    ],
+    [
+     378.4,
+     144.3
+    ],
+    [
+     353.0,
+     144.3
+    ]
+   ],
+   "size": "25.4 deep x 26.6 wide, front faces west",
+   "note": "box with an X = appliance space; probably the refrigerator (unconfirmed)",
+   "source": "extrapolated"
+  },
+  {
+   "id": "APPLIANCE_A",
+   "room": "LIVING (kitchen)",
+   "polygon": [
+    [
+     256.5,
+     149.4
+    ],
+    [
+     286.7,
+     149.4
+    ],
+    [
+     286.7,
+     173.4
+    ],
+    [
+     256.5,
+     173.4
+    ]
+   ],
+   "size": "30.2 x 24.0",
+   "note": "plain box under the counter; dishwasher, cabinet or fridge? (unconfirmed)",
+   "source": "extrapolated"
+  },
+  {
+   "id": "HEATER_BR_SW",
+   "room": "BR_SW",
+   "type": "baseboard heater",
+   "wall": "south",
+   "under_window": "W_BR_SW",
+   "x": [
+    59.8,
+    107.9
+   ],
+   "y_wall": 0,
+   "length_in": "unknown (assumed within window width)",
+   "depth_in": "unknown",
+   "source": "occupant info (constraints.txt)",
+   "rule": "no bed, bedding or furniture in front of or against it"
+  },
+  {
+   "id": "HEATER_LIVING",
+   "room": "LIVING",
+   "type": "baseboard heater",
+   "wall": "south",
+   "under_window": "W_LIVING",
+   "x": [
+    277.4,
+    325.4
+   ],
+   "y_wall": 0,
+   "length_in": "unknown (assumed within window width)",
+   "depth_in": "unknown",
+   "source": "occupant info (constraints.txt)",
+   "rule": "no bed, bedding or furniture in front of or against it"
+  },
+  {
+   "id": "HEATER_BR_NE",
+   "room": "BR_NE",
+   "type": "baseboard heater",
+   "wall": "east",
+   "under_window": "W_BR_NE",
+   "y": [
+    187.3,
+    235.3
+   ],
+   "x_wall": 378.4,
+   "length_in": "unknown (assumed within window width)",
+   "depth_in": "unknown",
+   "source": "occupant info (constraints.txt)",
+   "rule": "no bed, bedding or furniture in front of or against it"
+  },
+  {
+   "id": "SHAFT",
+   "room": "not in unit",
+   "polygon": [
+    [
+     160.2,
+     306.2
+    ],
+    [
+     175.9,
+     306.2
+    ],
+    [
+     175.9,
+     347.7
+    ],
+    [
+     160.2,
+     347.7
+    ]
+   ],
+   "note": "service shaft (box with X) between entry and bathroom",
+   "source": "vector"
+  },
+  {
+   "id": "STAIR_CORE",
+   "room": "not in unit",
+   "bounds": {
+    "x": [
+     -7.8,
+     134.2
+    ],
+    "y": [
+     138.4,
+     275.4
+    ]
+   },
+   "note": "building stair/elevator core north of bedroom SW (E.B./E.H. marks)",
+   "source": "vector"
+  }
+ ],
+ "walls_summary": [
+  {
+   "what": "south exterior wall",
+   "thickness_in": 11.8,
+   "y": [
+    -11.8,
+    0
+   ],
+   "source": "vector"
+  },
+  {
+   "what": "east exterior wall (NE bedroom)",
+   "thickness_in": 11.8,
+   "x": [
+    378.4,
+    390.2
+   ],
+   "source": "vector"
+  },
+  {
+   "what": "east exterior wall (living)",
+   "thickness_in": "8.3 + 3.6 = 11.9",
+   "x": [
+    366.4,
+    378.3
+   ],
+   "source": "vector"
+  },
+  {
+   "what": "west exterior wall (bedroom SW)",
+   "thickness_in": "5.9 + outer skin ~2.8",
+   "x": [
+    -8.7,
+    0
+   ],
+   "source": "vector"
+  },
+  {
+   "what": "partition bedroom SW / living",
+   "thickness_in": 4.7,
+   "x": [
+    127.2,
+    131.9
+   ],
+   "source": "vector"
+  },
+  {
+   "what": "partition kitchen / bedroom NE",
+   "thickness_in": 4.7,
+   "y": [
+    175.2,
+    179.9
+   ],
+   "source": "vector"
+  },
+  {
+   "what": "partition bathroom / bedroom NE",
+   "thickness_in": 4.6,
+   "x": [
+    272.2,
+    276.8
+   ],
+   "source": "vector"
+  },
+  {
+   "what": "stair core (concrete)",
+   "thickness_in": "7.9 + 0.9 finish",
+   "source": "vector"
+  },
+  {
+   "what": "structural columns",
+   "size_in": "12 x 12 at x 123.2-135.2 and 358.2-370.2 (south wall); 12 x 24 at x 358.2-382.2, y 104.3-116.3",
+   "source": "vector"
+  }
+ ],
+ "flags": [
+  "BR_NE: label 10'-0\" (120) does not match the drawn walls (101.6 at north, 124.4 at south). Measure on site.",
+  "Entry door and bathroom door: open leaves overlap; they cannot both be fully open.",
+  "Passage entry-living: 39.3 in clear, or 30.0 in if the thick L mark near (182,205) is a solid element (unidentified).",
+  "Kitchen appliance boxes (X box and box A) are not labelled; fridge/dishwasher positions are assumptions.",
+  "Symbol above the bathroom north wall (x ~193-228) looks like a window but the inner wall is continuous: probably not a window into the unit.",
+  "Space at the NE corner (x 330.8-386.7, y 323.7-352) with a bifold symbol is outside the unit.",
+  "Baseboard heaters under every window (occupant info): keep the window zones on the south wall (x 59.8-107.9, x 277.4-325.4) and east wall (y 187.3-235.3) free of furniture and bedding.",
+  "Bathroom: tub only (no walk-in shower); largest free circle is computed in rooms[BATH].turning_circle_max."
+ ],
+ "walls_raw": [
+  {
+   "type": "tri",
+   "pts": [
+    [
+     -8.7,
+     -3.8
+    ],
+    [
+     -8.7,
+     8.0
+    ],
+    [
+     3.1,
+     -3.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     3.1,
+     -3.8
+    ],
+    [
+     3.1,
+     8.2
+    ],
+    [
+     -8.7,
+     8.0
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     3.1,
+     8.2
+    ],
+    [
+     -8.7,
+     8.0
+    ],
+    [
+     -8.7,
+     8.2
+    ]
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    123.2,
+    135.2
+   ],
+   "y": [
+    -3.8,
+    8.2
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    370.2,
+    382.2
+   ],
+   "y": [
+    339.8,
+    351.8
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    358.2,
+    382.2
+   ],
+   "y": [
+    104.3,
+    116.3
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    358.2,
+    370.2
+   ],
+   "y": [
+    -3.8,
+    8.2
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     38.0,
+     275.4
+    ],
+    [
+     120.6,
+     267.6
+    ],
+    [
+     38.0,
+     267.6
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     38.0,
+     275.4
+    ],
+    [
+     112.7,
+     275.4
+    ],
+    [
+     120.6,
+     267.6
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     109.4,
+     267.6
+    ],
+    [
+     134.2,
+     253.8
+    ],
+    [
+     123.2,
+     253.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     109.4,
+     267.6
+    ],
+    [
+     120.6,
+     267.6
+    ],
+    [
+     134.2,
+     253.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     123.2,
+     253.8
+    ],
+    [
+     134.2,
+     250.6
+    ],
+    [
+     126.4,
+     250.6
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     123.2,
+     253.8
+    ],
+    [
+     134.2,
+     253.8
+    ],
+    [
+     134.2,
+     250.6
+    ]
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    126.4,
+    134.2
+   ],
+   "y": [
+    146.2,
+    250.6
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    -7.8,
+    -0.0
+   ],
+   "y": [
+    146.2,
+    275.4
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    -7.8,
+    134.2
+   ],
+   "y": [
+    138.4,
+    146.2
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     368.8,
+     351.8
+    ],
+    [
+     386.7,
+     351.8
+    ],
+    [
+     368.8,
+     352.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     386.7,
+     351.8
+    ],
+    [
+     368.8,
+     352.2
+    ],
+    [
+     380.4,
+     352.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     380.4,
+     352.2
+    ],
+    [
+     386.7,
+     352.2
+    ],
+    [
+     386.7,
+     351.8
+    ]
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    382.2,
+    386.7
+   ],
+   "y": [
+    339.8,
+    351.8
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     368.8,
+     351.8
+    ],
+    [
+     370.2,
+     339.8
+    ],
+    [
+     368.8,
+     339.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     368.8,
+     351.8
+    ],
+    [
+     370.2,
+     351.8
+    ],
+    [
+     370.2,
+     339.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     368.8,
+     339.8
+    ],
+    [
+     386.7,
+     338.3
+    ],
+    [
+     368.8,
+     338.3
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     368.8,
+     339.8
+    ],
+    [
+     386.7,
+     339.8
+    ],
+    [
+     386.7,
+     338.3
+    ]
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    378.4,
+    386.7
+   ],
+   "y": [
+    323.7,
+    338.3
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    378.4,
+    386.7
+   ],
+   "y": [
+    235.3,
+    323.7
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    224.7,
+    277.4
+   ],
+   "y": [
+    -11.8,
+    -8.2
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     386.7,
+     345.8
+    ],
+    [
+     390.2,
+     345.8
+    ],
+    [
+     386.7,
+     352.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     390.2,
+     345.8
+    ],
+    [
+     386.7,
+     352.2
+    ],
+    [
+     389.6,
+     352.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     389.6,
+     352.2
+    ],
+    [
+     390.2,
+     352.2
+    ],
+    [
+     390.2,
+     345.8
+    ]
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    386.7,
+    390.2
+   ],
+   "y": [
+    272.8,
+    345.8
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    386.7,
+    390.2
+   ],
+   "y": [
+    235.3,
+    272.8
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    129.2,
+    160.7
+   ],
+   "y": [
+    -11.5,
+    -8.2
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    107.9,
+    129.2
+   ],
+   "y": [
+    -11.5,
+    -8.2
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     129.2,
+     -11.5
+    ],
+    [
+     160.7,
+     -11.8
+    ],
+    [
+     129.2,
+     -11.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     129.2,
+     -11.5
+    ],
+    [
+     160.7,
+     -11.5
+    ],
+    [
+     160.7,
+     -11.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     107.9,
+     -11.5
+    ],
+    [
+     129.2,
+     -11.8
+    ],
+    [
+     107.9,
+     -11.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     107.9,
+     -11.5
+    ],
+    [
+     129.2,
+     -11.5
+    ],
+    [
+     129.2,
+     -11.8
+    ]
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    -2.9,
+    59.8
+   ],
+   "y": [
+    -11.8,
+    -8.2
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     -8.7,
+     -11.8
+    ],
+    [
+     -8.7,
+     -11.3
+    ],
+    [
+     -2.9,
+     -11.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     -2.9,
+     -11.8
+    ],
+    [
+     -2.9,
+     -8.2
+    ],
+    [
+     -8.7,
+     -11.3
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     -2.9,
+     -8.2
+    ],
+    [
+     -8.7,
+     -11.3
+    ],
+    [
+     -8.7,
+     -8.2
+    ]
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    324.9,
+    378.4
+   ],
+   "y": [
+    317.8,
+    323.7
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    324.9,
+    330.8
+   ],
+   "y": [
+    323.7,
+    341.8
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    180.7,
+    330.8
+   ],
+   "y": [
+    341.8,
+    347.7
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     175.9,
+     341.8
+    ],
+    [
+     180.7,
+     341.8
+    ],
+    [
+     175.9,
+     352.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     180.7,
+     341.8
+    ],
+    [
+     175.9,
+     352.2
+    ],
+    [
+     178.7,
+     352.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     178.7,
+     352.2
+    ],
+    [
+     180.7,
+     352.2
+    ],
+    [
+     180.7,
+     341.8
+    ]
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    175.9,
+    180.7
+   ],
+   "y": [
+    306.2,
+    341.8
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     153.8,
+     347.7
+    ],
+    [
+     160.2,
+     347.7
+    ],
+    [
+     153.8,
+     352.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     160.2,
+     347.7
+    ],
+    [
+     153.8,
+     352.2
+    ],
+    [
+     155.2,
+     352.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     155.2,
+     352.2
+    ],
+    [
+     160.2,
+     352.2
+    ],
+    [
+     160.2,
+     347.7
+    ]
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    153.8,
+    160.2
+   ],
+   "y": [
+    306.2,
+    347.7
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     137.5,
+     347.7
+    ],
+    [
+     153.8,
+     347.7
+    ],
+    [
+     137.5,
+     352.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     153.8,
+     347.7
+    ],
+    [
+     137.5,
+     352.2
+    ],
+    [
+     141.2,
+     352.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     141.2,
+     352.2
+    ],
+    [
+     153.8,
+     352.2
+    ],
+    [
+     153.8,
+     347.7
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     90.0,
+     347.7
+    ],
+    [
+     99.6,
+     347.7
+    ],
+    [
+     90.0,
+     352.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     99.6,
+     347.7
+    ],
+    [
+     90.0,
+     352.2
+    ],
+    [
+     92.2,
+     352.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     92.2,
+     352.2
+    ],
+    [
+     99.6,
+     352.2
+    ],
+    [
+     99.6,
+     347.7
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     -8.7,
+     341.8
+    ],
+    [
+     -8.7,
+     344.7
+    ],
+    [
+     95.9,
+     341.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     95.9,
+     341.8
+    ],
+    [
+     95.9,
+     347.7
+    ],
+    [
+     -8.7,
+     344.7
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     95.9,
+     347.7
+    ],
+    [
+     -8.7,
+     344.7
+    ],
+    [
+     -8.7,
+     347.7
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     -7.8,
+     275.4
+    ],
+    [
+     -7.8,
+     276.8
+    ],
+    [
+     -8.7,
+     275.4
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     -7.8,
+     276.8
+    ],
+    [
+     -8.7,
+     275.4
+    ],
+    [
+     -8.7,
+     276.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     -7.8,
+     270.9
+    ],
+    [
+     -7.8,
+     275.4
+    ],
+    [
+     -8.7,
+     270.9
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     -7.8,
+     275.4
+    ],
+    [
+     -8.7,
+     270.9
+    ],
+    [
+     -8.7,
+     275.4
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     -5.9,
+     347.7
+    ],
+    [
+     -0.0,
+     347.7
+    ],
+    [
+     -5.9,
+     352.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     -0.0,
+     347.7
+    ],
+    [
+     -5.9,
+     352.2
+    ],
+    [
+     -0.4,
+     352.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     -0.4,
+     352.2
+    ],
+    [
+     -0.0,
+     352.2
+    ],
+    [
+     -0.0,
+     347.7
+    ]
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    265.6,
+    270.3
+   ],
+   "y": [
+    347.7,
+    352.2
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     270.1,
+     352.2
+    ],
+    [
+     270.3,
+     352.2
+    ],
+    [
+     270.3,
+     347.7
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     180.7,
+     347.7
+    ],
+    [
+     187.5,
+     347.7
+    ],
+    [
+     180.7,
+     352.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     187.5,
+     347.7
+    ],
+    [
+     180.7,
+     352.2
+    ],
+    [
+     186.3,
+     352.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     186.3,
+     352.2
+    ],
+    [
+     187.5,
+     352.2
+    ],
+    [
+     187.5,
+     347.7
+    ]
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    153.8,
+    180.7
+   ],
+   "y": [
+    304.2,
+    306.2
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     153.8,
+     304.2
+    ],
+    [
+     180.7,
+     299.2
+    ],
+    [
+     158.7,
+     299.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     153.8,
+     304.2
+    ],
+    [
+     180.7,
+     304.2
+    ],
+    [
+     180.7,
+     299.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     158.7,
+     299.2
+    ],
+    [
+     173.9,
+     292.5
+    ],
+    [
+     165.5,
+     292.5
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     158.7,
+     299.2
+    ],
+    [
+     180.7,
+     299.2
+    ],
+    [
+     173.9,
+     292.5
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     165.5,
+     292.5
+    ],
+    [
+     173.0,
+     291.7
+    ],
+    [
+     164.7,
+     291.7
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     165.5,
+     292.5
+    ],
+    [
+     173.9,
+     292.5
+    ],
+    [
+     173.0,
+     291.7
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     164.7,
+     291.7
+    ],
+    [
+     174.8,
+     289.9
+    ],
+    [
+     162.9,
+     289.9
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     164.7,
+     291.7
+    ],
+    [
+     173.0,
+     291.7
+    ],
+    [
+     174.8,
+     289.9
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     162.9,
+     289.9
+    ],
+    [
+     176.4,
+     288.3
+    ],
+    [
+     164.5,
+     288.3
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     162.9,
+     289.9
+    ],
+    [
+     174.8,
+     289.9
+    ],
+    [
+     176.4,
+     288.3
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     164.5,
+     288.3
+    ],
+    [
+     169.7,
+     288.3
+    ],
+    [
+     167.1,
+     285.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     176.8,
+     281.3
+    ],
+    [
+     183.5,
+     281.3
+    ],
+    [
+     180.2,
+     278.0
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     169.7,
+     288.3
+    ],
+    [
+     183.5,
+     281.3
+    ],
+    [
+     176.8,
+     281.3
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     169.7,
+     288.3
+    ],
+    [
+     176.4,
+     288.3
+    ],
+    [
+     183.5,
+     281.3
+    ]
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    272.2,
+    276.8
+   ],
+   "y": [
+    281.8,
+    341.8
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    241.0,
+    276.8
+   ],
+   "y": [
+    279.8,
+    281.8
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     241.0,
+     279.8
+    ],
+    [
+     274.1,
+     277.0
+    ],
+    [
+     241.0,
+     277.0
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     241.0,
+     279.8
+    ],
+    [
+     276.8,
+     279.8
+    ],
+    [
+     274.1,
+     277.0
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     247.7,
+     275.1
+    ],
+    [
+     265.4,
+     275.1
+    ],
+    [
+     256.6,
+     266.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     245.7,
+     277.0
+    ],
+    [
+     265.4,
+     275.1
+    ],
+    [
+     247.7,
+     275.1
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     245.7,
+     277.0
+    ],
+    [
+     267.4,
+     277.0
+    ],
+    [
+     265.4,
+     275.1
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     241.0,
+     277.0
+    ],
+    [
+     247.7,
+     275.1
+    ],
+    [
+     241.0,
+     275.1
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     241.0,
+     277.0
+    ],
+    [
+     245.7,
+     277.0
+    ],
+    [
+     247.7,
+     275.1
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     267.4,
+     277.0
+    ],
+    [
+     263.2,
+     266.2
+    ],
+    [
+     256.6,
+     266.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     267.4,
+     277.0
+    ],
+    [
+     274.1,
+     277.0
+    ],
+    [
+     263.2,
+     266.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     241.0,
+     275.1
+    ],
+    [
+     256.6,
+     266.2
+    ],
+    [
+     249.8,
+     266.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     241.0,
+     275.1
+    ],
+    [
+     247.7,
+     275.1
+    ],
+    [
+     256.6,
+     266.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     249.8,
+     266.2
+    ],
+    [
+     259.9,
+     262.8
+    ],
+    [
+     253.2,
+     262.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     249.8,
+     266.2
+    ],
+    [
+     263.2,
+     266.2
+    ],
+    [
+     259.9,
+     262.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     210.4,
+     254.5
+    ],
+    [
+     213.7,
+     251.2
+    ],
+    [
+     207.0,
+     251.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     253.2,
+     262.8
+    ],
+    [
+     234.2,
+     237.2
+    ],
+    [
+     227.6,
+     237.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     253.2,
+     262.8
+    ],
+    [
+     259.9,
+     262.8
+    ],
+    [
+     234.2,
+     237.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     207.0,
+     251.2
+    ],
+    [
+     227.6,
+     237.2
+    ],
+    [
+     220.9,
+     237.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     207.0,
+     251.2
+    ],
+    [
+     213.7,
+     251.2
+    ],
+    [
+     227.6,
+     237.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     220.9,
+     237.2
+    ],
+    [
+     230.9,
+     233.8
+    ],
+    [
+     224.2,
+     233.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     220.9,
+     237.2
+    ],
+    [
+     234.2,
+     237.2
+    ],
+    [
+     230.9,
+     233.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     224.2,
+     233.8
+    ],
+    [
+     217.0,
+     219.9
+    ],
+    [
+     210.3,
+     219.9
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     224.2,
+     233.8
+    ],
+    [
+     230.9,
+     233.8
+    ],
+    [
+     217.0,
+     219.9
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     222.6,
+     207.7
+    ],
+    [
+     229.2,
+     207.7
+    ],
+    [
+     225.9,
+     204.3
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     210.3,
+     219.9
+    ],
+    [
+     229.2,
+     207.7
+    ],
+    [
+     222.6,
+     207.7
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     210.3,
+     219.9
+    ],
+    [
+     217.0,
+     219.9
+    ],
+    [
+     229.2,
+     207.7
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     134.2,
+     240.4
+    ],
+    [
+     136.8,
+     237.9
+    ],
+    [
+     134.2,
+     237.9
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     134.2,
+     237.9
+    ],
+    [
+     140.9,
+     233.7
+    ],
+    [
+     134.2,
+     233.7
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     134.2,
+     237.9
+    ],
+    [
+     136.8,
+     237.9
+    ],
+    [
+     140.9,
+     233.7
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     134.2,
+     233.7
+    ],
+    [
+     150.3,
+     217.6
+    ],
+    [
+     134.2,
+     217.6
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     134.2,
+     233.7
+    ],
+    [
+     157.0,
+     217.6
+    ],
+    [
+     150.3,
+     217.6
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     134.2,
+     233.7
+    ],
+    [
+     140.9,
+     233.7
+    ],
+    [
+     157.0,
+     217.6
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     150.3,
+     217.6
+    ],
+    [
+     141.0,
+     201.6
+    ],
+    [
+     134.2,
+     201.6
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     134.2,
+     217.6
+    ],
+    [
+     150.3,
+     217.6
+    ],
+    [
+     134.2,
+     201.6
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     150.3,
+     217.6
+    ],
+    [
+     157.0,
+     217.6
+    ],
+    [
+     141.0,
+     201.6
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     135.5,
+     196.1
+    ],
+    [
+     135.5,
+     194.8
+    ],
+    [
+     134.2,
+     194.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     134.2,
+     201.6
+    ],
+    [
+     141.0,
+     201.6
+    ],
+    [
+     134.2,
+     194.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     134.2,
+     174.8
+    ],
+    [
+     135.5,
+     174.8
+    ],
+    [
+     135.5,
+     173.5
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     134.2,
+     194.8
+    ],
+    [
+     135.5,
+     174.8
+    ],
+    [
+     134.2,
+     174.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     134.2,
+     194.8
+    ],
+    [
+     135.5,
+     194.8
+    ],
+    [
+     135.5,
+     174.8
+    ]
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    38.0,
+    114.7
+   ],
+   "y": [
+    275.4,
+    276.8
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     136.1,
+     263.1
+    ],
+    [
+     140.2,
+     258.9
+    ],
+    [
+     131.9,
+     258.9
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     131.9,
+     258.9
+    ],
+    [
+     139.9,
+     258.5
+    ],
+    [
+     131.5,
+     258.5
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     131.9,
+     258.9
+    ],
+    [
+     140.2,
+     258.9
+    ],
+    [
+     139.9,
+     258.5
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     112.7,
+     275.4
+    ],
+    [
+     131.5,
+     258.5
+    ],
+    [
+     129.6,
+     258.5
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     112.7,
+     275.4
+    ],
+    [
+     114.7,
+     275.4
+    ],
+    [
+     131.5,
+     258.5
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     129.6,
+     258.5
+    ],
+    [
+     135.7,
+     254.3
+    ],
+    [
+     133.8,
+     254.3
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     129.6,
+     258.5
+    ],
+    [
+     139.9,
+     258.5
+    ],
+    [
+     135.7,
+     254.3
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     134.2,
+     253.8
+    ],
+    [
+     135.7,
+     240.4
+    ],
+    [
+     134.2,
+     240.4
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     134.2,
+     253.8
+    ],
+    [
+     135.7,
+     253.8
+    ],
+    [
+     135.7,
+     240.4
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     134.2,
+     240.4
+    ],
+    [
+     135.7,
+     240.4
+    ],
+    [
+     135.7,
+     239.0
+    ]
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    386.7,
+    390.2
+   ],
+   "y": [
+    99.8,
+    187.3
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    374.7,
+    390.2
+   ],
+   "y": [
+    96.3,
+    99.8
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    374.7,
+    378.2
+   ],
+   "y": [
+    -8.2,
+    96.3
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    325.4,
+    378.2
+   ],
+   "y": [
+    -11.8,
+    -8.2
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    224.7,
+    277.4
+   ],
+   "y": [
+    -8.2,
+    0.0
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     256.1,
+     180.8
+    ],
+    [
+     256.9,
+     179.9
+    ],
+    [
+     255.2,
+     179.9
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     255.2,
+     179.9
+    ],
+    [
+     378.4,
+     177.4
+    ],
+    [
+     252.8,
+     177.4
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     255.2,
+     179.9
+    ],
+    [
+     378.4,
+     179.9
+    ],
+    [
+     378.4,
+     177.4
+    ]
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    252.8,
+    378.4
+   ],
+   "y": [
+    175.2,
+    177.4
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    378.4,
+    386.7
+   ],
+   "y": [
+    117.7,
+    187.3
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     365.4,
+     117.7
+    ],
+    [
+     386.7,
+     116.3
+    ],
+    [
+     365.4,
+     116.3
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     365.4,
+     117.7
+    ],
+    [
+     386.7,
+     117.7
+    ],
+    [
+     386.7,
+     116.3
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     356.8,
+     117.7
+    ],
+    [
+     365.4,
+     116.3
+    ],
+    [
+     356.8,
+     116.3
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     356.8,
+     117.7
+    ],
+    [
+     365.4,
+     117.7
+    ],
+    [
+     365.4,
+     116.3
+    ]
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    382.2,
+    386.7
+   ],
+   "y": [
+    104.3,
+    116.3
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     356.8,
+     116.3
+    ],
+    [
+     358.2,
+     104.3
+    ],
+    [
+     356.8,
+     104.3
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     356.8,
+     116.3
+    ],
+    [
+     358.2,
+     116.3
+    ],
+    [
+     358.2,
+     104.3
+    ]
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    356.8,
+    386.7
+   ],
+   "y": [
+    102.9,
+    104.3
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    366.4,
+    386.7
+   ],
+   "y": [
+    99.8,
+    102.9
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    366.4,
+    374.7
+   ],
+   "y": [
+    9.7,
+    99.8
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     356.8,
+     9.7
+    ],
+    [
+     374.7,
+     8.2
+    ],
+    [
+     356.8,
+     8.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     356.8,
+     9.7
+    ],
+    [
+     374.7,
+     9.7
+    ],
+    [
+     374.7,
+     8.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     356.8,
+     8.2
+    ],
+    [
+     358.2,
+     0.0
+    ],
+    [
+     356.8,
+     0.0
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     356.8,
+     8.2
+    ],
+    [
+     358.2,
+     8.2
+    ],
+    [
+     358.2,
+     0.0
+    ]
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    370.2,
+    374.7
+   ],
+   "y": [
+    -3.8,
+    8.2
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    325.4,
+    358.2
+   ],
+   "y": [
+    -3.8,
+    0.0
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    325.4,
+    374.7
+   ],
+   "y": [
+    -8.2,
+    -3.8
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     -8.7,
+     230.6
+    ],
+    [
+     -8.7,
+     255.0
+    ],
+    [
+     -7.8,
+     230.6
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     -7.8,
+     230.6
+    ],
+    [
+     -7.8,
+     270.9
+    ],
+    [
+     -8.7,
+     255.0
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     -7.8,
+     270.9
+    ],
+    [
+     -8.7,
+     255.0
+    ],
+    [
+     -8.7,
+     270.9
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     -8.2,
+     229.6
+    ],
+    [
+     -7.8,
+     211.8
+    ],
+    [
+     -8.2,
+     211.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     -8.2,
+     229.6
+    ],
+    [
+     -7.8,
+     229.6
+    ],
+    [
+     -7.8,
+     211.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     182.5,
+     192.1
+    ],
+    [
+     189.2,
+     185.4
+    ],
+    [
+     175.8,
+     185.4
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     134.2,
+     174.8
+    ],
+    [
+     136.6,
+     172.4
+    ],
+    [
+     134.2,
+     172.4
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     182.5,
+     185.4
+    ],
+    [
+     199.8,
+     174.8
+    ],
+    [
+     193.2,
+     174.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     182.5,
+     185.4
+    ],
+    [
+     189.2,
+     185.4
+    ],
+    [
+     199.8,
+     174.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     175.8,
+     185.4
+    ],
+    [
+     171.8,
+     174.8
+    ],
+    [
+     165.1,
+     174.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     175.8,
+     185.4
+    ],
+    [
+     182.5,
+     185.4
+    ],
+    [
+     171.8,
+     174.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     193.2,
+     174.8
+    ],
+    [
+     202.8,
+     171.8
+    ],
+    [
+     196.1,
+     171.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     193.2,
+     174.8
+    ],
+    [
+     199.8,
+     174.8
+    ],
+    [
+     202.8,
+     171.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     196.1,
+     171.8
+    ],
+    [
+     202.8,
+     171.8
+    ],
+    [
+     199.4,
+     168.4
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     134.2,
+     172.4
+    ],
+    [
+     140.9,
+     168.0
+    ],
+    [
+     134.2,
+     168.0
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     134.2,
+     172.4
+    ],
+    [
+     136.6,
+     172.4
+    ],
+    [
+     140.9,
+     168.0
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     134.2,
+     168.0
+    ],
+    [
+     146.7,
+     162.3
+    ],
+    [
+     139.9,
+     162.3
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     134.2,
+     168.0
+    ],
+    [
+     140.9,
+     168.0
+    ],
+    [
+     146.7,
+     162.3
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     134.2,
+     168.0
+    ],
+    [
+     139.9,
+     162.3
+    ],
+    [
+     134.2,
+     162.3
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     165.1,
+     174.8
+    ],
+    [
+     156.3,
+     159.3
+    ],
+    [
+     149.7,
+     159.3
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     165.1,
+     174.8
+    ],
+    [
+     171.8,
+     174.8
+    ],
+    [
+     156.3,
+     159.3
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     139.9,
+     162.3
+    ],
+    [
+     149.7,
+     159.3
+    ],
+    [
+     143.0,
+     159.3
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     139.9,
+     162.3
+    ],
+    [
+     146.7,
+     162.3
+    ],
+    [
+     149.7,
+     159.3
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     134.2,
+     162.3
+    ],
+    [
+     143.0,
+     159.3
+    ],
+    [
+     134.2,
+     159.3
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     134.2,
+     162.3
+    ],
+    [
+     139.9,
+     162.3
+    ],
+    [
+     143.0,
+     159.3
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     143.0,
+     159.3
+    ],
+    [
+     153.0,
+     156.0
+    ],
+    [
+     146.3,
+     156.0
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     143.0,
+     159.3
+    ],
+    [
+     156.3,
+     159.3
+    ],
+    [
+     153.0,
+     156.0
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     134.2,
+     159.3
+    ],
+    [
+     146.3,
+     156.0
+    ],
+    [
+     134.2,
+     156.0
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     134.2,
+     159.3
+    ],
+    [
+     143.0,
+     159.3
+    ],
+    [
+     146.3,
+     156.0
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     146.3,
+     156.0
+    ],
+    [
+     148.5,
+     151.5
+    ],
+    [
+     141.8,
+     151.5
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     146.3,
+     156.0
+    ],
+    [
+     153.0,
+     156.0
+    ],
+    [
+     148.5,
+     151.5
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     134.2,
+     156.0
+    ],
+    [
+     141.8,
+     151.5
+    ],
+    [
+     134.2,
+     151.5
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     134.2,
+     156.0
+    ],
+    [
+     146.3,
+     156.0
+    ],
+    [
+     141.8,
+     151.5
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     141.8,
+     151.5
+    ],
+    [
+     161.6,
+     138.4
+    ],
+    [
+     154.8,
+     138.4
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     141.8,
+     151.5
+    ],
+    [
+     148.5,
+     151.5
+    ],
+    [
+     161.6,
+     138.4
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     134.2,
+     151.5
+    ],
+    [
+     154.8,
+     138.4
+    ],
+    [
+     134.2,
+     138.4
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     134.2,
+     151.5
+    ],
+    [
+     141.8,
+     151.5
+    ],
+    [
+     154.8,
+     138.4
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     -8.7,
+     138.4
+    ],
+    [
+     -8.7,
+     182.3
+    ],
+    [
+     -7.8,
+     138.4
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     -7.8,
+     138.4
+    ],
+    [
+     -7.8,
+     210.8
+    ],
+    [
+     -8.7,
+     182.3
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     -7.8,
+     210.8
+    ],
+    [
+     -8.7,
+     182.3
+    ],
+    [
+     -8.7,
+     210.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     154.8,
+     138.4
+    ],
+    [
+     162.4,
+     137.5
+    ],
+    [
+     155.8,
+     137.5
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     154.8,
+     138.4
+    ],
+    [
+     161.6,
+     138.4
+    ],
+    [
+     162.4,
+     137.5
+    ]
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    -8.7,
+    155.8
+   ],
+   "y": [
+    137.5,
+    138.4
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    -8.7,
+    131.9
+   ],
+   "y": [
+    137.0,
+    137.5
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     127.2,
+     137.0
+    ],
+    [
+     131.9,
+     134.8
+    ],
+    [
+     127.2,
+     134.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     127.2,
+     137.0
+    ],
+    [
+     131.9,
+     137.0
+    ],
+    [
+     131.9,
+     134.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     131.9,
+     137.5
+    ],
+    [
+     165.4,
+     134.5
+    ],
+    [
+     131.9,
+     134.5
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     131.9,
+     137.5
+    ],
+    [
+     162.4,
+     137.5
+    ],
+    [
+     165.4,
+     134.5
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     131.9,
+     134.5
+    ],
+    [
+     163.8,
+     132.8
+    ],
+    [
+     131.9,
+     132.8
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     131.9,
+     134.5
+    ],
+    [
+     165.4,
+     134.5
+    ],
+    [
+     163.8,
+     132.8
+    ]
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    127.2,
+    131.9
+   ],
+   "y": [
+    9.7,
+    98.8
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     131.9,
+     9.7
+    ],
+    [
+     136.5,
+     8.2
+    ],
+    [
+     131.9,
+     8.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     131.9,
+     9.7
+    ],
+    [
+     136.5,
+     9.7
+    ],
+    [
+     136.5,
+     8.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     127.2,
+     9.7
+    ],
+    [
+     131.9,
+     8.2
+    ],
+    [
+     127.2,
+     8.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     127.2,
+     9.7
+    ],
+    [
+     131.9,
+     9.7
+    ],
+    [
+     131.9,
+     8.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     121.8,
+     9.7
+    ],
+    [
+     127.2,
+     8.2
+    ],
+    [
+     121.8,
+     8.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     121.8,
+     9.7
+    ],
+    [
+     127.2,
+     9.7
+    ],
+    [
+     127.2,
+     8.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     135.2,
+     8.2
+    ],
+    [
+     136.5,
+     0.0
+    ],
+    [
+     135.2,
+     0.0
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     135.2,
+     8.2
+    ],
+    [
+     136.5,
+     8.2
+    ],
+    [
+     136.5,
+     0.0
+    ]
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    121.8,
+    123.2
+   ],
+   "y": [
+    0.0,
+    8.2
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    135.2,
+    160.7
+   ],
+   "y": [
+    -3.8,
+    0.0
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    107.9,
+    123.2
+   ],
+   "y": [
+    -3.8,
+    0.0
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    107.9,
+    160.7
+   ],
+   "y": [
+    -8.2,
+    -3.8
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     -0.0,
+     9.7
+    ],
+    [
+     4.4,
+     8.2
+    ],
+    [
+     -0.0,
+     8.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     -0.0,
+     9.7
+    ],
+    [
+     4.4,
+     9.7
+    ],
+    [
+     4.4,
+     8.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     -8.7,
+     8.2
+    ],
+    [
+     -8.7,
+     9.1
+    ],
+    [
+     -5.9,
+     8.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     -5.9,
+     8.2
+    ],
+    [
+     -5.9,
+     9.7
+    ],
+    [
+     -8.7,
+     9.1
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     -5.9,
+     9.7
+    ],
+    [
+     -8.7,
+     9.1
+    ],
+    [
+     -8.7,
+     9.7
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     3.1,
+     8.2
+    ],
+    [
+     4.4,
+     0.0
+    ],
+    [
+     3.1,
+     0.0
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     3.1,
+     8.2
+    ],
+    [
+     4.4,
+     8.2
+    ],
+    [
+     4.4,
+     0.0
+    ]
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    3.1,
+    59.8
+   ],
+   "y": [
+    -3.8,
+    0.0
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     -8.7,
+     -8.2
+    ],
+    [
+     -8.7,
+     -5.3
+    ],
+    [
+     59.8,
+     -8.2
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     59.8,
+     -8.2
+    ],
+    [
+     59.8,
+     -3.8
+    ],
+    [
+     -8.7,
+     -5.3
+    ]
+   ]
+  },
+  {
+   "type": "tri",
+   "pts": [
+    [
+     59.8,
+     -3.8
+    ],
+    [
+     -8.7,
+     -5.3
+    ],
+    [
+     -8.7,
+     -3.8
+    ]
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    48.0,
+    52.8
+   ],
+   "y": [
+    113.0,
+    137.0
+   ]
+  },
+  {
+   "type": "rect",
+   "x": [
+    -5.9,
+    -0.0
+   ],
+   "y": [
+    8.2,
+    137.0
+   ]
+  }
+ ]
+}

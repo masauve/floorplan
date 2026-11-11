@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: floorplan
+  annotations:
+    image.openshift.io/triggers: '[{"from":{"kind":"ImageStreamTag","name":"floorplan:latest"},"fieldPath":"spec.template.spec.containers[?(@.name==\"app\")].image"}]'
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate            # volume ReadWriteOnce + SQLite : un seul pod à la fois
+  selector:
+    matchLabels:
+      deployment: floorplan
+  template:
+    metadata:
+      labels:
+        deployment: floorplan
+    spec:
+      containers:
+        - name: app
+          image: floorplan:latest
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: DB_PATH
+              value: /data/plans.db
+          volumeMounts:
+            - name: donnees
+              mountPath: /data
+          readinessProbe:
+            httpGet: {path: /readyz, port: http}
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: {path: /healthz, port: http}
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests: {cpu: 100m, memory: 256Mi}
+            limits: {cpu: "1", memory: 512Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: ["ALL"]}
+            runAsNonRoot: true
+            seccompProfile: {type: RuntimeDefault}
+      volumes:
+        - name: donnees
+          persistentVolumeClaim:
+            claimName: floorplan-donnees
