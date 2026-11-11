@@ -48,7 +48,13 @@
   </aside>
   <section id="zone-plan">
     <svg id="plan" xmlns="http://www.w3.org/2000/svg"></svg>
-    <div class="aide-plan">Glisser : déplacer · <b>R</b> : tourner · <b>Suppr</b> : enlever · flèches : 1 po (Maj : 6 po) · molette : zoom · glisser le fond : déplacer la vue</div>
+    <div class="controles-vue" role="group" aria-label="Vue du plan">
+      <button id="btn-zoom-plus" title="Zoom avant (touche +)" aria-label="Zoom avant">+</button>
+      <span id="niveau-zoom" title="Niveau de zoom">100 %</span>
+      <button id="btn-zoom-moins" title="Zoom arrière (touche −)" aria-label="Zoom arrière">−</button>
+      <button id="btn-recentrer" class="texte" title="Afficher tout le plan (touche 0)">Recentrer</button>
+    </div>
+    <div class="aide-plan">Glisser : déplacer · <b>R</b> : tourner · <b>Suppr</b> : enlever · flèches : 1 po (Maj : 6 po) · <b>+</b> / <b>−</b> / molette : zoom · <b>0</b> : recentrer · glisser le fond : déplacer la vue</div>
     <div class="legende">
       <span><i class="c-existant"></i>Existant</span><span><i class="c-nouveau"></i>À acheter</span><span><i class="c-sur_mesure"></i>Sur mesure</span><span><i class="c-perso"></i>Créé</span>
       <span><i class="c-probleme"></i>Problème</span><span><i class="c-plinthe"></i>Plinthe chauffante</span>

@@ -6,10 +6,12 @@ const FRONT = { 0: [0, -1], 90: [-1, 0], 180: [0, 1], 270: [1, 0] };
 const COULEURS = { existant: '#4a7fd4', nouveau: '#f0a030', sur_mesure: '#9b6cd1', perso: '#2a9d8f' };
 const NOMS_CATEGORIES = { existant: 'existant', nouveau: 'à acheter', sur_mesure: 'sur mesure', perso: 'créé' };
 
+const VUE_INITIALE = { x: -15, y: -362, w: 412, h: 432 };
+const ZOOM_MIN = 60, ZOOM_MAX = 900;   // largeur de la vue, en pouces
 const S = {
   plan: null, cat: [], catById: {}, placements: [], sel: null,
   planId: null, nomPlan: 'Nouveau plan', modifie: false,
-  vb: { x: -15, y: -362, w: 412, h: 432 },
+  vb: { x: -15, y: -362, w: 412, h: 432 },   // vue initiale : tout l'appartement et le balcon
   problemes: [], resultats: null,
 };
 
@@ -296,6 +298,28 @@ function appliquerVue() {
   const v = S.vb;
   $('plan').setAttribute('viewBox', `${v.x} ${v.y} ${v.w} ${v.h}`);
 }
+/* Zoom autour d'un point du plan (par défaut le centre de la vue). f > 1 : éloigner, f < 1 : rapprocher. */
+function zoomer(f, centre) {
+  const [px, py] = centre || [S.vb.x + S.vb.w / 2, -(S.vb.y + S.vb.h / 2)];
+  const sy = -py;
+  const w = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, S.vb.w * f)), k = w / S.vb.w;
+  S.vb = { x: px - (px - S.vb.x) * k, y: sy - (sy - S.vb.y) * k, w, h: S.vb.h * k };
+  appliquerVue();
+  majBoutonsZoom();
+  if (gMeubles) dessinerMeubles();   // poignées et étiquettes à l'échelle de la vue
+}
+function recentrer() {
+  S.vb = { ...VUE_INITIALE };
+  appliquerVue();
+  majBoutonsZoom();
+  if (gMeubles) dessinerMeubles();
+}
+function majBoutonsZoom() {
+  if (!$('btn-zoom-plus')) return;
+  $('btn-zoom-plus').disabled = S.vb.w <= ZOOM_MIN + 0.01;
+  $('btn-zoom-moins').disabled = S.vb.w >= ZOOM_MAX - 0.01;
+  $('niveau-zoom').textContent = `${Math.round(VUE_INITIALE.w / S.vb.w * 100)} %`;
+}
 function versPlan(ev) {
   const svg = $('plan'), p = svg.createSVGPoint();
   p.x = ev.clientX; p.y = ev.clientY;
@@ -344,12 +368,7 @@ function initVue() {
   svg.addEventListener('pointercancel', fin);
   svg.addEventListener('wheel', (ev) => {
     ev.preventDefault();
-    const f = ev.deltaY > 0 ? 1.12 : 1 / 1.12;
-    const [px, py] = versPlan(ev);
-    const sy = -py;
-    const w = Math.min(900, Math.max(60, S.vb.w * f)), k = w / S.vb.w;
-    S.vb = { x: px - (px - S.vb.x) * k, y: sy - (sy - S.vb.y) * k, w, h: S.vb.h * k };
-    appliquerVue();
+    zoomer(ev.deltaY > 0 ? 1.12 : 1 / 1.12, versPlan(ev));
   }, { passive: false });
 }
 
@@ -406,6 +425,11 @@ function enlever(id) { S.placements = S.placements.filter((p) => p.uid !== id); 
 
 document.addEventListener('keydown', (ev) => {
   if (['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+  if (!ev.ctrlKey && !ev.metaKey && !ev.altKey) {
+    if (ev.key === '+' || ev.key === '=') { zoomer(1 / 1.25); ev.preventDefault(); return; }
+    if (ev.key === '-' || ev.key === '_') { zoomer(1.25); ev.preventDefault(); return; }
+    if (ev.key === '0') { recentrer(); ev.preventDefault(); return; }
+  }
   const pl = S.placements.find((p) => p.uid === S.sel);
   if (!pl) return;
   const pas = ev.shiftKey ? 6 : 1;
@@ -633,6 +657,10 @@ async function demarrer() {
   };
   $('nom-plan').oninput = () => marquerModifie(true);
   $('form-meuble').onsubmit = creerMeuble;
+  $('btn-zoom-plus').onclick = () => zoomer(1 / 1.25);
+  $('btn-zoom-moins').onclick = () => zoomer(1.25);
+  $('btn-recentrer').onclick = recentrer;
+  majBoutonsZoom();
   for (const id of ['p-plinthe']) $(id).onchange = toutRedessiner;
 }
 demarrer();
